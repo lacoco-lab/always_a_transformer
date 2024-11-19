@@ -42,6 +42,41 @@ def generate_flip_flop(length, prob_w, prob_r):
     return ''.join(flipflop_str)
 
 
+def generate_all_valid_flipflops(length):
+    """
+    Generate all possible valid FlipFlop strings of a given length.
+    :param length: int, length of the FlipFlop string (must be even)
+    :return: list of str, all valid FlipFlop strings of the given length
+    """
+
+    if length < 4 or length % 2 != 0:
+        raise ValueError("Length must be an even number and at least 4.")
+
+    def backtrack(current, last_written_bit):
+        # Base case: if the string reaches the desired length
+        if len(current) == length - 2:
+            return [current + ['r', last_written_bit]]
+
+        results = []
+        for instruction in ['w', 'r', 'i']:
+            if instruction == 'r':
+                results.extend(backtrack(current + [instruction, last_written_bit], last_written_bit))
+            elif instruction == 'w':
+                for bit in ['0', '1']:
+                    results.extend(backtrack(current + [instruction, bit], bit))
+            elif instruction == 'i':
+                for bit in ['0', '1']:
+                    results.extend(backtrack(current + [instruction, bit], last_written_bit))
+
+        return results
+
+    valid_flipflops = []
+    for first_bit in ['0', '1']:
+        valid_flipflops.extend(backtrack(['w', first_bit], first_bit))
+
+    return [''.join(flipflop) for flipflop in valid_flipflops]
+
+
 def validate_flip_flop(flipflop_str):
     """
     Check if the FlipFlop string is valid
