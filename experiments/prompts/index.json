@@ -1,0 +1,1 @@
+{"files":[{"text":"You are an LLM, don't pretend to be anything else.","name":"sys","version":"0","metadata":{}},{"text":"Instruction: Get the digit after the last 'w' character.\nInput: {{ input }}\n\nThe output must always be between <begin>, <end> tags.\nOutput: <begin>","name":"basic","version":"0","metadata":{}}]}
