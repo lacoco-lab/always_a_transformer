@@ -64,8 +64,8 @@ if __name__ == "__main__":
     with open(args.ip_path) as reader:
         data = reader.readlines()
 
-    registry = DirectoryPromptRegistry(Path("experiments/prompts"), force_reindex=True)
-    task_prompt = registry.get(name="basic")
+    registry = DirectoryPromptRegistry(Path("prompts/zero-shot_basic"), force_reindex=True)
+    task_prompt = registry.get(name="task")
     system_prompt = registry.get(name="sys")
 
     for d in data:
