@@ -10,7 +10,7 @@ from banks.registries import DirectoryPromptRegistry
 def get_default_prompting_params():
     return {
         "seed": 5,
-        "max_tokens": 100,
+        "max_tokens": 20,
         "temperature": 0,
         "stop": "<end>",
         "logprobs": True,
@@ -71,5 +71,5 @@ if __name__ == "__main__":
     for d in data:
         q_prompt = task_prompt.text({"input": d.strip()[:-1]})
         response = openai_vllm_chat(client, q_prompt, system_prompt.text())
-        answer = parse_response(response.choices[0].message.content)
-        print(f"Question: {d.strip()[:-1]} **** \nAnswer: {answer}\n****\n")
+        # answer = parse_response(response.choices[0].message.content)
+        print(f"Question: {d.strip()[:-1]} **** \nAnswer: {response.choices[0].message.content}\n****\n")
