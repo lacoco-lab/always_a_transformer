@@ -1,8 +1,10 @@
 import argparse
-import numpy as np
-import openai
+import re
 
 from pathlib import Path
+
+import numpy as np
+import openai
 
 from banks.registries import DirectoryPromptRegistry
 
@@ -10,7 +12,7 @@ from banks.registries import DirectoryPromptRegistry
 def get_default_prompting_params():
     return {
         "seed": 5,
-        "max_tokens": 20,
+        "max_tokens": 200,
         "temperature": 0,
         "stop": "<end>",
         "logprobs": True,
@@ -42,9 +44,7 @@ def construct_vllm_chat_prompt(task_prompt, system_prompt):
 
 
 def parse_response(response_text):
-    ans_begin = response_text.find("<begin>")
-    ans_end = response_text.find("<end>")
-    answer = response_text[ans_begin+5:ans_end]
+    answer = re.search(r'<answer>(.*?)</ans', response_text).group(1)
     return answer
 
 
@@ -71,5 +71,9 @@ if __name__ == "__main__":
     for d in data:
         q_prompt = task_prompt.text({"input": d.strip()[:-1]})
         response = openai_vllm_chat(client, q_prompt, system_prompt.text())
-        # answer = parse_response(response.choices[0].message.content)
-        print(f"Question: {d.strip()[:-1]} **** \nAnswer: {response.choices[0].message.content}\n****\n")
+        res_text = response.choices[0].message.content
+        answer = parse_response(res_text)
+        print(f"Question: {d.strip()[:-1]} **** \nAnswer: {answer}\n****\n")
+        # print("="*50)
+        # print(f"Response: {res_text}")
+        # print("="*50)
