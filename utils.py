@@ -22,5 +22,5 @@ def save_to_json(path, list_of_dicts):
 
     with open(path + "/results.jsonl", 'w') as out:
         for ddict in list_of_dicts:
-            jout = json.dumps(ddict) + '\n'
-            out.write(jout)
+            out.write(json.dumps(ddict))
+            out.write('\n')

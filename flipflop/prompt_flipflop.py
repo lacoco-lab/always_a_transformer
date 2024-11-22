@@ -49,7 +49,7 @@ def parse_response(response_text):
 def openai_single_query(data, client, task_prompt, system_prompt):
 
     responses = []
-    for d in data:
+    for idx, d in enumerate(data):
         q_prompt = task_prompt.text({"input": d.strip()[:-1]})
         response = openai_vllm_chat(client, q_prompt, system_prompt.text())
         res_text = response.choices[0].message.content
@@ -59,10 +59,11 @@ def openai_single_query(data, client, task_prompt, system_prompt):
         # Save response to a file
         last_write_index = get_last_write_index(d)
         response = {
+            "id": idx,
             "prompt": q_prompt,
-            "answer": answer,
-            "flipflop": d,
-            "last_valid_token": d[-1],
+            "answer": int(answer),
+            "flipflop": d.strip(),
+            "last_valid_token": int(d.strip()[-1]),
             "last_write_index": last_write_index,
             "full_answer": res_text
         }
