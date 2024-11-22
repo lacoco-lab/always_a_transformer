@@ -1,12 +1,10 @@
 import argparse
 import re
-
 from pathlib import Path
-
 import numpy as np
 import openai
-
 from banks.registries import DirectoryPromptRegistry
+from utils import get_last_write_index, save_to_json
 
 
 def get_default_prompting_params():
@@ -52,12 +50,13 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--ip_path", type=str, required=True, help="Dir Path to the dataset")
     ap.add_argument("--engine", type=str, required=True, help="Engine to use for inference")
+    ap.add_argument("--save_path", type=str, nargs='?', default="results/flipflop", help="Dir Path to save results in jsonlines")
     args = ap.parse_args()
 
     client, model = None, None
     if "openai" in args.engine:
         client = openai.Client(
-            base_url="http://134.96.104.203:8000/v1", api_key="sk_noreq")
+            base_url="http://127.0.0.1:8080/v1", api_key="sk_noreq")
     else:
         raise NotImplementedError("No other engines supported yet")
 
@@ -68,12 +67,24 @@ if __name__ == "__main__":
     task_prompt = registry.get(name="task")
     system_prompt = registry.get(name="sys")
 
+    responses = []
     for d in data:
         q_prompt = task_prompt.text({"input": d.strip()[:-1]})
         response = openai_vllm_chat(client, q_prompt, system_prompt.text())
         res_text = response.choices[0].message.content
         answer = parse_response(res_text)
         print(f"Question: {d.strip()[:-1]} **** \nAnswer: {answer}\n****\n")
-        # print("="*50)
-        # print(f"Response: {res_text}")
-        # print("="*50)
+
+        # Save response to a file
+        last_write_index = get_last_write_index(d)
+        response = {
+            "prompt": q_prompt,
+            "answer": answer,
+            "flipflop": d,
+            "last_valid_token": d[-1],
+            "last_write_index": last_write_index,
+            "full_answer": res_text
+        }
+        responses.append(response)
+
+    save_to_json(args.save_path, responses)
