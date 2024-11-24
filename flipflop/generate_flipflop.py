@@ -23,16 +23,18 @@ path = "datasets/flipflop"
 for length in range(int(start_length), int(finish_length)+1, 2):
     valid_flipflops = generate_all_valid_flipflops(int(length))
 
-    # Validate all generated strings
+    # Validate all generated strings and only keep the valid ones
+    valid_flipflops_count = 0
     for flipflop in valid_flipflops:
-        validate_flip_flop(flipflop)
+        try:
+            validate_flip_flop(flipflop)
+            all_valid_flipflops.append(flipflop)
+            valid_flipflops_count += 1
+        except AssertionError:
+            continue
 
-    all_valid_flipflops.append(valid_flipflops)
+    print(f"Generated {valid_flipflops_count} strings for length {length}.")
 
-    print(f"Generated {len(valid_flipflops)} strings for length {length}.")
+np.savez_compressed(path + f"/flipflop_{finish_length}.npz", array=np.array(all_valid_flipflops))
 
-flattened_flipflops = np.array(list(chain.from_iterable(all_valid_flipflops)))
-
-np.savez_compressed(path + "/flipflop.npz", array=flattened_flipflops)
-
-print(f"Saved {len(flattened_flipflops)} valid FlipFlop strings to {path}/flipflop.npz.")
+print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {path}/flipflop_{finish_length}.npz.")
