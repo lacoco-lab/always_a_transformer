@@ -10,7 +10,7 @@ from banks.registries import DirectoryPromptRegistry
 from more_itertools import chunked
 from tqdm.asyncio import tqdm
 
-from utils import get_last_write_index, save_to_json
+from utils import get_last_write_index, save_to_jsonl
 
 
 async def openai_vllm_chat(client, task_prompt, system_prompt, xid):
@@ -70,7 +70,7 @@ def merge_data_with_responses(data, responses):
         d = data[d_idx]
         res_text = resp.choices[0].message.content
         answer = parse_response(res_text)
-        last_write_index = get_last_write_index(d)
+        last_write_index = get_last_write_index(d.strip())
         # print(f"Question: {d.strip()[:-1]} **** \nAnswer: {answer}\n****\n")
 
         response = {
@@ -114,4 +114,4 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError("No other engines supported yet")
 
-    save_to_json(args.save_path, results)
+    save_to_jsonl(args.save_path, f"{Path(args.ip_path).name.split(".")[0]}_results.jsonl", results)
