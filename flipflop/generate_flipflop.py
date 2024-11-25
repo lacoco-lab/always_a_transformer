@@ -1,5 +1,4 @@
 import sys
-from itertools import chain
 import numpy as np
 from flipflop_generator import generate_all_valid_flipflops, validate_flip_flop
 
@@ -35,6 +34,6 @@ for length in range(int(start_length), int(finish_length)+1, 2):
 
     print(f"Generated {valid_flipflops_count} strings for length {length}.")
 
-np.savez_compressed(path + f"/flipflop_{finish_length}.npz", array=np.array(all_valid_flipflops))
+np.savetxt(path + f"/flipflop_{finish_length}.txt", all_valid_flipflops, delimiter='\n', fmt='%s')
 
-print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {path}/flipflop_{finish_length}.npz.")
+print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {path}/flipflop_{finish_length}.txt.")
