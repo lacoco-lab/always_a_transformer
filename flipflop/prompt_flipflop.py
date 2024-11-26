@@ -14,7 +14,8 @@ from utils import get_last_write_index, save_to_jsonl
 
 
 async def openai_vllm_chat(client, task_prompt, system_prompt, xid):
-    inference_params = {"seed": 5, "max_tokens": 200, "temperature": 0, "stop": "<end>", "logprobs": True}
+    inference_params = {"seed": 5, "max_tokens": 200, "temperature": 0, "stop": "<end>", "logprobs": True,
+                        "extra_body": {"top_k": 1}}
     model = await client.models.list()
     response = await client.chat.completions.create(
         model=model.data[0].id,
