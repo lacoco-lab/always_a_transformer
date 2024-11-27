@@ -14,7 +14,7 @@ from utils import get_last_write_index, save_to_jsonl
 
 
 async def openai_vllm_chat(client, task_prompt, system_prompt, xid):
-    inference_params = {"seed": 5, "max_tokens": 200, "temperature": 0, "stop": "<end>", "logprobs": True,
+    inference_params = {"seed": 5, "max_tokens": 300, "temperature": 0, "stop": "<end>", "logprobs": True,
                         "extra_body": {"top_k": 1}}
     model = await client.models.list()
     response = await client.chat.completions.create(
@@ -33,7 +33,12 @@ async def openai_vllm_chat(client, task_prompt, system_prompt, xid):
 
 
 def parse_response(response_text):
-    answer = re.search(r'<answer>(.*?)</ans', response_text).group(1)
+    try:
+        answer = re.search(r'<answer>(.*?)</answer>', response_text).group(1)
+        answer = int(answer)
+    except (AttributeError, ValueError):
+        # print(f"Response: {response_text}")
+        answer = -1
     return answer
 
 
@@ -59,25 +64,22 @@ def batch_query(data, client, task_prompt, system_prompt, batch_size=1000):
     for chunk in tqdm(chunked_data):
         resp = asyncio.run(openai_single_query(chunk, client, task_prompt, system_prompt))
         responses.extend(resp)
-        break
     outputs = merge_data_with_responses(data, responses)
     return outputs
 
 
 def merge_data_with_responses(data, responses):
     output = []
-    for resp in responses:
-        d_idx = int(resp._request_id.replace("flipflop-", ""))
-        d = data[d_idx]
+    for r_idx, resp in enumerate(responses):
+        d = data[r_idx]
         res_text = resp.choices[0].message.content
         answer = parse_response(res_text)
         last_write_index = get_last_write_index(d.strip())
         # print(f"Question: {d.strip()[:-1]} **** \nAnswer: {answer}\n****\n")
-
         response = {
-            "id": d_idx,
+            "id": r_idx,
             "prompt": d.strip()[:-1],
-            "answer": int(answer),
+            "answer": answer,
             "flipflop": d.strip(),
             "last_valid_token": int(d.strip()[-1]),
             "last_write_index": last_write_index,
@@ -110,7 +112,7 @@ if __name__ == "__main__":
     client, model = None, None
     if "openai" in args.engine:
         client = openai.AsyncClient(
-            base_url="http://127.0.0.1:8080/v1", api_key="sk_noreq")
+            base_url="http://134.96.104.203:8080/v1", api_key="sk_noreq", max_retries=10)
         results = batch_query(data, client, task_prompt, system_prompt)
     else:
         raise NotImplementedError("No other engines supported yet")
