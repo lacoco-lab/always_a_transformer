@@ -67,6 +67,7 @@ def get_strict_distance_accuracy(distance_to_last_w, responses):
     assert distance_to_last_w >= 2 and distance_to_last_w % 2 == 0
 
     responses_in_distance = []
+
     for response in responses:
         assert distance_to_last_w + 2 <= len(response['flipflop'])
 
@@ -79,19 +80,42 @@ def get_strict_distance_accuracy(distance_to_last_w, responses):
     return get_base_accuracy(responses_in_distance)
 
 
+def get_per_dist_accuracy(responses):
+    """
+    Calculates the accuracy of the model's response per distance until the last write.'
+    :param responses: list of dictionaries containing model's responses'
+    :return: dict, correct answer proportion per last write index
+    """
+
+    distances = {}
+    results = {}
+
+    for response in responses:
+        distance = len(response['flipflop']) - response['last_write_index']
+        if distance not in distances.keys():
+            distances[distance] = []
+        distances[distance].append(response)
+
+    for dist, responses in distances.items():
+
+        results[dist] = get_base_accuracy(responses)
+
+    return results
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--path", type=str, default="results/flipflop/results.jsonl", help="Dir Path to the results")
+    ap.add_argument("--path", type=str, default="OLMo_7B/flipflop_10_results.jsonl", help="Dir Path to the results")
     ap.add_argument("--dist", type=int, default=4, help="Distance between last write and read instructions")
     ap.add_argument("--digit", type=int, default=0, help="Digit to calculate the accuracy for")
-    ap.add_argument("--dist_beg", type=int, default=4, help="Beginning of the distance range for last write and read")
+    ap.add_argument("--dist_beg", type=int, default=2, help="Beginning of the distance range for last write and read")
     ap.add_argument("--dist_end", type=int, default=8, help="End of the distance range for last write and read")
     args = ap.parse_args()
 
     with open(args.path, 'r') as file:
         data = [json.loads(line) for line in file]
 
-    print(f"Baseline accuracy for FlipFlop task is {get_base_accuracy(data)}")
-    print(f"Accuracy for the distance {args.dist} is {get_strict_distance_accuracy(args.dist, data)}")
-    print(f"Accuracy for the digit {args.digit} is {get_digit_accuracy(data, args.digit)}")
-    print(f"Accuracy for the range in distance {args.dist_beg}-{args.dist_end} is {get_relaxed_distance_accuracy(args.dist_beg, args.dist_end, data)}")
+    #print(f"Baseline accuracy for FlipFlop task is {get_base_accuracy(data)}")
+    #print(f"Accuracy for the distance {args.dist} is {get_strict_distance_accuracy(args.dist, data)}")
+    #print(f"Accuracy for the digit {args.digit} is {get_digit_accuracy(data, args.digit)}")
+    #print(f"Accuracy for the range in distance {args.dist_beg}-{args.dist_end} is {get_relaxed_distance_accuracy(args.dist_beg, args.dist_end, data)}")
