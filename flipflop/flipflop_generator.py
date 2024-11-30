@@ -1,6 +1,45 @@
 import random
 
 
+def generate_flip_flop_with_distance(length, w_idx):
+    """
+    Generate valid FlipFlop string by specifying the distance between last write and read
+    :param length: int, length of the generated string
+    :param w_idx: int, at which index you want your write to be
+    :return: str, valid flipflop string
+    """
+
+    # sanity checks for length
+    assert length % 2 == 0  and length >= 4 and length-4 >= 0
+    assert w_idx % 2 == 0 and w_idx <= length-4
+
+    flipflop_str = ['w', random.choice(['0', '1'])]
+    last_written_bit = flipflop_str[1]
+
+    for i in range(2, length - 2, 2):
+
+        if i == w_idx:
+            instruction = 'w'
+            data_bit = random.choice(['0', '1'])
+            last_written_bit = data_bit
+        else:
+            instruction = random.choice(['r', 'i'])
+
+            if instruction == 'r':
+                data_bit = last_written_bit
+            elif instruction == 'i':
+                data_bit = random.choice(['0', '1'])
+
+        flipflop_str.append(instruction)
+        flipflop_str.append(data_bit)
+
+    flipflop_str.append('r')
+    flipflop_str.append(last_written_bit)
+
+    return ''.join(flipflop_str)
+
+
+
 def generate_flip_flop(length, prob_w, prob_r):
     """
     Generate valid FlipFlop string:
