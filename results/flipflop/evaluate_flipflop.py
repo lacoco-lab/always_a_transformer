@@ -115,7 +115,7 @@ if __name__ == "__main__":
     with open(args.path, 'r') as file:
         data = [json.loads(line) for line in file]
 
-    #print(f"Baseline accuracy for FlipFlop task is {get_base_accuracy(data)}")
+    print(f"Baseline accuracy for FlipFlop task is {get_base_accuracy(data)}")
     #print(f"Accuracy for the distance {args.dist} is {get_strict_distance_accuracy(args.dist, data)}")
-    #print(f"Accuracy for the digit {args.digit} is {get_digit_accuracy(data, args.digit)}")
+    print(f"Accuracy for the digit {args.digit} is {get_digit_accuracy(data, args.digit)}")
     #print(f"Accuracy for the range in distance {args.dist_beg}-{args.dist_end} is {get_relaxed_distance_accuracy(args.dist_beg, args.dist_end, data)}")
