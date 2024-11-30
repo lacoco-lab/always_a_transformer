@@ -1,71 +1,13 @@
 import argparse
-import asyncio
-import re
 
 from pathlib import Path
 
 import openai
 
 from banks.registries import DirectoryPromptRegistry
-from more_itertools import chunked
-from tqdm.asyncio import tqdm
 
-from utils import get_last_write_index, save_to_jsonl
-
-
-async def openai_vllm_chat(client, task_prompt, system_prompt, xid):
-    inference_params = {"seed": 5, "max_tokens": 300, "temperature": 0, "stop": "<end>", "logprobs": True,
-                        "extra_body": {"top_k": 1}}
-    model = await client.models.list()
-    response = await client.chat.completions.create(
-        model=model.data[0].id,
-        # model=model,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": task_prompt},
-        ],
-        **inference_params,
-        extra_headers={
-            "x-request-id": xid,
-        }
-    )
-    return response
-
-
-def parse_response(response_text):
-    try:
-        answer = re.search(r'<answer>(.*?)</answer>', response_text).group(1)
-        answer = int(answer)
-    except (AttributeError, ValueError):
-        # print(f"Response: {response_text}")
-        answer = -1
-    return answer
-
-
-async def _prepare_prompts(data, task_prompt):
-    for idx, d in enumerate(data):
-        yield idx, task_prompt.text({"input": d.strip()[:-1]})
-
-
-async def openai_single_query(data, client, task_prompt, system_prompt):
-    q_tasks = []
-    async for d_idx, d in _prepare_prompts(data, task_prompt):
-        q_task = asyncio.create_task(openai_vllm_chat(client, d, system_prompt.text(), f"flipflop-{d_idx}"))
-        q_tasks.append(q_task)
-
-    await tqdm.gather(*q_tasks)
-    responses = [q_task.result() for q_task in q_tasks]
-    return responses
-
-
-def batch_query(data, client, task_prompt, system_prompt, batch_size=1000):
-    responses = []
-    chunked_data = list(chunked(data, batch_size))
-    for chunk in tqdm(chunked_data):
-        resp = asyncio.run(openai_single_query(chunk, client, task_prompt, system_prompt))
-        responses.extend(resp)
-    outputs = merge_data_with_responses(data, responses)
-    return outputs
+from utils.vllm_openai_server import batch_query, wait_for_engine_to_start
+from utils.utils import get_last_write_index, parse_flipflop_response, save_to_jsonl
 
 
 def merge_data_with_responses(data, responses):
@@ -73,7 +15,7 @@ def merge_data_with_responses(data, responses):
     for r_idx, resp in enumerate(responses):
         d = data[r_idx]
         res_text = resp.choices[0].message.content
-        answer = parse_response(res_text)
+        answer = parse_flipflop_response(res_text)
         last_write_index = get_last_write_index(d.strip())
         # print(f"Question: {d.strip()[:-1]} **** \nAnswer: {answer}\n****\n")
         response = {
@@ -109,12 +51,24 @@ if __name__ == "__main__":
     if not Path(args.save_path).exists():
         Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
-    client, model = None, None
+    base_url = "http://134.96.104.203:8080/v1"
+
     if "openai" in args.engine:
+        wait_for_engine_to_start(base_url)
         client = openai.AsyncClient(
-            base_url="http://134.96.104.203:8080/v1", api_key="sk_noreq", max_retries=10)
+            base_url=base_url, api_key="sk_noreq", max_retries=10)
         results = batch_query(data, client, task_prompt, system_prompt)
+        results = merge_data_with_responses(data, results)
+    elif "vllm" in args.engine:
+        import sys
+        sys.exit("VLLM engine not supported yet")
+        # WARNING: This is not ready. PLEASE DO NOT RUN THIS.
+        model_name = "allenai/OLMo-7B-0724-Instruct-hf"
+        tp_size = 4 if "70B" in model_name else 2
+        model = LLM(model_name, seed=5, tensor_parallel_size=2, gpu_memory_utilization=0.85)
+        results = batch_query_vllm(data, model, task_prompt, system_prompt)
+        model.llm_engine.__del__()
     else:
         raise NotImplementedError("No other engines supported yet")
 
-    save_to_jsonl(args.save_path, f"{Path(args.ip_path).name.split(".")[0]}_results.jsonl", results)
+    save_to_jsonl(args.save_path, f"{Path(args.ip_path).name.split(".")[0]}_spaced_results.jsonl", results)
