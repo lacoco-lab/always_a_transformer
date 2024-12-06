@@ -12,7 +12,7 @@ CUDA_VISIBLE_DEVICES=0 vllm serve /scratch/common_models/OLMo-7B-0724-Instruct-h
 VLLMPID=$!
 
 INPUT_DIR="datasets/flipflop/distance"
-OUTPUT_DIR="results/flipflop/OLMo_7B"
+OUTPUT_DIR="results/flipflop/OLMo_7B/distance"
 
 # Iterate over all files in the input directory
 for INPUT_FILE in "$INPUT_DIR"/*; do
@@ -26,7 +26,7 @@ for INPUT_FILE in "$INPUT_DIR"/*; do
     # Run the experiment, possible to run multiple experiments in sequence
     python flipflop/prompt_flipflop.py \
       --ip_path "$INPUT_FILE" \
-      --save_path "$OUTPUT_DIR/$BASENAME-output.txt" \
+      --save_path "$OUTPUT_DIR" \
       --engine openai
   fi
 done
