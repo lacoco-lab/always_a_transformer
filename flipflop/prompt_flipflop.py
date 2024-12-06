@@ -52,7 +52,7 @@ if __name__ == "__main__":
         Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
     #base_url = "http://134.96.104.203:8080/v1" # Run this if you are running locally and want to ping Mayank's machine
-    base_url = "0.0.0.0:8080" # Run this from the coli server
+    base_url = "http://0.0.0.0:8080/v1" # Run this from the coli server
 
     if "openai" in args.engine:
         wait_for_engine_to_start(base_url)
