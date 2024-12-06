@@ -11,8 +11,25 @@ CUDA_VISIBLE_DEVICES=0 vllm serve /scratch/common_models/OLMo-7B-0724-Instruct-h
 # We want to shut down the VLLM server after the experiment is done, so we need its PID
 VLLMPID=$!
 
-# Run the experiment, possible to run multiple experiments in sequence
-python flipflop/prompt_flipflop.py --ip_path datasets/flipflop/examples.txt --save_path results/flipflop/OLMo_7B/ --engine openai
+INPUT_DIR="datasets/flipflop/distance"
+OUTPUT_DIR="results/flipflop/OLMo_7B"
+
+# Iterate over all files in the input directory
+for INPUT_FILE in "$INPUT_DIR"/*; do
+  if [[ -f $INPUT_FILE ]]; then
+    # Extract filename without extension for output naming
+    BASENAME=$(basename "$INPUT_FILE" .txt)
+
+    echo "Processing file: $INPUT_FILE"
+
+
+    # Run the experiment, possible to run multiple experiments in sequence
+    python flipflop/prompt_flipflop.py \
+      --ip_path "$INPUT_FILE" \
+      --save_path "$OUTPUT_DIR/$BASENAME-output.txt" \
+      --engine openai
+  fi
+done
 
 # Shut down the VLLM server
 kill $VLLMPID
