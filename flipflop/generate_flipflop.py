@@ -110,7 +110,7 @@ def generate_with_distance_w(length, w_idx, limit=1000):
 
 
 all_valid_flipflops = generate_with_distance_w(int(length), int(w_idx), int(limit))
-save_path = path + f"/distance/s2/flipflop_{length}_w{w_idx}.txt"
+save_path = path + f"/distance/s5/flipflop_{length}_w{w_idx}.txt"
 np.savetxt(save_path, all_valid_flipflops, delimiter='\n', fmt='%s')
 
 print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {save_path}/flipflop_{length}_w{w_idx}.txt.")
