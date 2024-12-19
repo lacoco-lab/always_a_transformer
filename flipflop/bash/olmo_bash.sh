@@ -11,8 +11,8 @@ CUDA_VISIBLE_DEVICES=0 vllm serve /scratch/common_models/OLMo-7B-0724-Instruct-h
 # We want to shut down the VLLM server after the experiment is done, so we need its PID
 VLLMPID=$!
 
-INPUT_DIR="datasets/flipflop/sparse"
-OUTPUT_DIR="results/flipflop/OLMo_7B/sparse"
+INPUT_DIR="datasets/flipflop/distance/s2"
+OUTPUT_DIR="results/flipflop/OLMo_7B/distance/s2"
 
 # Iterate over all files in the input directory
 for INPUT_FILE in "$INPUT_DIR"/*; do
