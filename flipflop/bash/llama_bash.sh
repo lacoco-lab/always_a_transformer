@@ -13,8 +13,8 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 vllm serve /scratch/common_models/Meta-Llama-3.1-70
 # We want to shut down the VLLM server after the experiment is done, so we need its PID
 VLLMPID=$!
 
-INPUT_DIR="datasets/flipflop/distance/s2"
-OUTPUT_DIR="results/flipflop/llama3.1_70B/distance/s2"
+INPUT_DIR="datasets/flipflop/distance/s5"
+OUTPUT_DIR="results/flipflop/llama3.1_70B/distance/s5"
 
 # Iterate over all files in the input directory
 for INPUT_FILE in "$INPUT_DIR"/*; do
