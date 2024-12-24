@@ -105,7 +105,7 @@ def get_per_dist_accuracy(responses):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--path", type=str, default="OLMo_7B/flipflop_10_results.jsonl", help="Dir Path to the results")
+    ap.add_argument("--path", type=str, default="OLMo_7B-instruct/flipflop_10_results.jsonl", help="Dir Path to the results")
     ap.add_argument("--dist", type=int, default=4, help="Distance between last write and read instructions")
     ap.add_argument("--digit", type=int, default=0, help="Digit to calculate the accuracy for")
     ap.add_argument("--dist_beg", type=int, default=2, help="Beginning of the distance range for last write and read")
