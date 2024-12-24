@@ -15,7 +15,7 @@ Strings are saved as a numpy file in the datasets/flipflop.
 """
 
 
-length, w_idx, limit = sys.argv[1:]
+length, pw, pr, limit = sys.argv[1:]
 path = "datasets/flipflop"
 
 def generate_from_to(start_length, finish_length):
@@ -108,8 +108,9 @@ def generate_with_distance_w(length, w_idx, limit=1000):
 
     return all_valid_flipflops
 
+for length in range(10, 510, 10):
+    all_valid_flipflops = generate_with_density(int(length), 0.1, 0.1, 100)
+    save_path = path + f"/sparse/s5/flipflop_{length}_pw{pw}.txt"
+    np.savetxt(save_path, all_valid_flipflops, delimiter='\n', fmt='%s')
 
-all_valid_flipflops = generate_with_distance_w(int(length), int(w_idx), int(limit))
-np.savetxt(path + f"/distance/flipflop_{length}_w{w_idx}.txt", all_valid_flipflops, delimiter='\n', fmt='%s')
-
-print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {path}/flipflop_{length}_w{w_idx}.txt.")
+print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {save_path}/flipflop_{length}_pw{pw}.txt.")
