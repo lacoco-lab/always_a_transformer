@@ -1,7 +1,7 @@
 import os
 from huggingface_hub import HfApi, logging
 
-MODEL_NAME="allenai/OLMo-7B-0724-Instruct-hf"
+MODEL_NAME = "meta-llama/Llama-3.1-70B"
 
 base_path = "/scratch/common_models/"
 os.environ["HF_HOME"] = base_path
@@ -11,7 +11,8 @@ logging.set_verbosity_debug()
 hf = HfApi()
 hf.snapshot_download(MODEL_NAME, cache_dir="/scratch/common_models/")
 
+os.makedirs(f"{base_path}/hf_model", exist_ok=True)
+
 os.execv("/bin/bash",
          ["bash", "-c",
-          f"cp -L {base_path}/modelsnapshots/aba3d33d766a33a44677e3a163f0fe2d1010d90a/* /scratch/common_models/hf_model/ "
-          "&& rm -rf * && mv /scratch/common_models/hf_model/ /scratch/common_models/OLMo-7B-0724-Instruct-hf"])
+          f"cp -L {base_path}/models--*/snapshots/*/* /scratch/common_models/hf_model/ && rm -rf {base_path}/models--* && mv /scratch/common_models/hf_model /scratch/common_models/{MODEL_NAME.split('/')[1]}"])
