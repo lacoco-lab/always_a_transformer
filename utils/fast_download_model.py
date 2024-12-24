@@ -1,4 +1,7 @@
+import shutil
 import os
+from glob import glob
+
 from huggingface_hub import HfApi, logging
 
 MODEL_NAME = "meta-llama/Llama-3.1-70B"
@@ -12,6 +15,12 @@ hf = HfApi()
 hf.snapshot_download(MODEL_NAME, cache_dir="/scratch/common_models/")
 
 os.makedirs(f"{base_path}/hf_model", exist_ok=True)
+
+og_path = glob(f"{base_path}/models--*/snapshots/*/original")
+
+if os.path.isdir(og_path[0]):
+    print("Deleting original checkpoints:", og_path)
+    shutil.rmtree(og_path[0])
 
 os.execv("/bin/bash",
          ["bash", "-c",
