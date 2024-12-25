@@ -26,7 +26,7 @@ for SUBFOLDER in s1 s2 s3 s4 s5; do
 
       echo "Processing file: $INPUT_FILE"
 
-      python flipflop/prompt_flipflop.py \
+      python flipflop/complete_flipflop.py \
         --ip_path "$INPUT_FILE" \
         --save_path "$OUTPUT_DIR" \
         --engine openai
