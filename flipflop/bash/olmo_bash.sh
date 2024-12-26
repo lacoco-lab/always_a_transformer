@@ -11,8 +11,8 @@ CUDA_VISIBLE_DEVICES=0 vllm serve /scratch/common_models/OLMo-7B-0724-hf --tenso
 # We want to shut down the VLLM server after the experiment is done, so we need its PID
 VLLMPID=$!
 
-BASE_INPUT_DIR="datasets/flipflop/sparse"
-BASE_OUTPUT_DIR="results/flipflop/OLMo_7B/sparse"
+BASE_INPUT_DIR="datasets/flipflop/distance"
+BASE_OUTPUT_DIR="results/flipflop/OLMo_7B/distance"
 
 for SUBFOLDER in s1 s2 s3 s4 s5; do
   INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
