@@ -7,7 +7,7 @@ import openai
 from banks.registries import DirectoryPromptRegistry
 
 from utils.vllm_openai_server import batch_complete, wait_for_engine_to_start
-from utils.utils import get_last_write_index, parse_flipflop_response, save_to_jsonl
+from utils.utils import get_last_write_index, save_to_jsonl
 
 
 def merge_data_with_responses(data, responses):
@@ -61,4 +61,4 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError("No other engines supported yet")
 
-    save_to_jsonl(args.save_path, f"{Path(args.ip_path).name.split(".")[0]}_results.jsonl", results)
+    save_to_jsonl(args.save_path, f"{Path(args.ip_path).name.split('.')[0]}_results.jsonl", results)

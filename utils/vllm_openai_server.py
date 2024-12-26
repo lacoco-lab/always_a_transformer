@@ -18,7 +18,7 @@ COMPLETION_INFERENCE_PARAMS = {"seed": 5, "max_tokens": 1, "temperature": 0, "lo
 def wait_for_engine_to_start(server_url, secs=5):
     while True:
         try:
-            response = requests.get(f"{server_url.replace("v1", "health")}", verify=False)
+            response = requests.get(f"{server_url.replace('v1', 'health')}", verify=False)
             if response.status_code == 200:
                 print(f"\n\nvLLM server is available now!\n\n")
                 break
