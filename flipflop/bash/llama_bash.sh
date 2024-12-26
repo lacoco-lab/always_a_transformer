@@ -8,29 +8,33 @@ conda activate len-gen
 export LD_LIBRARY_PATH=/scratch/yanav/anaconda3/lib/python3.12/site-packages/nvidia/nvjitlink/lib/:$LD_LIBRARY_PATH
 
 # HF model name, appropriate tensor parallel size, ideally check all the parameters
-CUDA_VISIBLE_DEVICES=0,1,2,3 vllm serve /scratch/common_models/Meta-Llama-3.1-70B-Instruct --tensor-parallel-size 4 --gpu-memory-utilization 0.9 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port 8080 &
+CUDA_VISIBLE_DEVICES=0,1,2,3 vllm serve /scratch/common_models/Meta-Llama-3.1-70B --tensor-parallel-size 4 --gpu-memory-utilization 0.9 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port 8080 &
 
 # We want to shut down the VLLM server after the experiment is done, so we need its PID
 VLLMPID=$!
 
-INPUT_DIR="datasets/flipflop/sparse/s5"
-OUTPUT_DIR="results/flipflop/llama3.1_70B/sparse/s5"
+INPUT_DIR="datasets/flipflop/sparse"
+OUTPUT_DIR="results/flipflop/llama3.1_70B/sparse"
 
 # Iterate over all files in the input directory
-for INPUT_FILE in "$INPUT_DIR"/*; do
-  if [[ -f $INPUT_FILE ]]; then
-    # Extract filename without extension for output naming
-    BASENAME=$(basename "$INPUT_FILE" .txt)
+for SUBFOLDER in s1 s2 s3 s4 s5; do
+  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
+  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
 
-    echo "Processing file: $INPUT_FILE"
+  mkdir -p "$OUTPUT_DIR"
 
+  for INPUT_FILE in "$INPUT_DIR"/*; do
+    if [[ -f $INPUT_FILE ]]; then
+      BASENAME=$(basename "$INPUT_FILE" .txt)
 
-    # Run the experiment, possible to run multiple experiments in sequence
-    python flipflop/prompt_flipflop.py \
-      --ip_path "$INPUT_FILE" \
-      --save_path "$OUTPUT_DIR" \
-      --engine openai
-  fi
+      echo "Processing file: $INPUT_FILE"
+
+      python flipflop/complete_flipflop.py \
+        --ip_path "$INPUT_FILE" \
+        --save_path "$OUTPUT_DIR" \
+        --engine openai
+    fi
+  done
 done
 
 # Shut down the VLLM server
