@@ -6,7 +6,7 @@ conda activate len-gen
 export LD_LIBRARY_PATH=/scratch/yanav/anaconda3/lib/python3.12/site-packages/nvidia/nvjitlink/lib/:$LD_LIBRARY_PATH
 
 # HF model name, appropriate tensor parallel size, ideally check all the parameters
-CUDA_VISIBLE_DEVICES=0 vllm serve /scratch/common_models/OLMo-7B-0724-hf --tensor-parallel-size 1 --gpu-memory-utilization 0.9 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port 8080 &
+CUDA_VISIBLE_DEVICES=0 vllm serve /scratch/common_models/OLMo-7B-0724-hf --tensor-parallel-size 1 --gpu-memory-utilization 0.9 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port 8080 & 
 
 # We want to shut down the VLLM server after the experiment is done, so we need its PID
 VLLMPID=$!
