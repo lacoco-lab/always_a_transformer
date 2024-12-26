@@ -4,17 +4,14 @@
 source /scratch/yanav/anaconda3/bin/activate
 conda activate len-gen
 
-# Replace LD_LIBRARY_PATH with the path to the nvjitlink library in the conda environment (not sure if this is needed/not)
-export LD_LIBRARY_PATH=/scratch/yanav/anaconda3/lib/python3.12/site-packages/nvidia/nvjitlink/lib/:$LD_LIBRARY_PATH
-
 # HF model name, appropriate tensor parallel size, ideally check all the parameters
 CUDA_VISIBLE_DEVICES=0,1,2,3 vllm serve /scratch/common_models/Llama-3.1-70B --tensor-parallel-size 4 --gpu-memory-utilization 0.9 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port 8080 &
 
 # We want to shut down the VLLM server after the experiment is done, so we need its PID
 VLLMPID=$!
 
-INPUT_DIR="datasets/flipflop/sparse"
-OUTPUT_DIR="results/flipflop/llama3.1_70B/sparse"
+BASE_INPUT_DIR="datasets/flipflop/sparse"
+BASE_OUTPUT_DIR="results/flipflop/llama3.1_70B/sparse"
 
 # Iterate over all files in the input directory
 for SUBFOLDER in s1 s2 s3 s4 s5; do
