@@ -63,4 +63,4 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError("No other engines supported yet")
 
-    save_to_jsonl(args.save_path, f"{Path(args.ip_path).name.split(".")[0]}_spaced_results.jsonl", results)
+    save_to_jsonl(args.save_path, f"{Path(args.ip_path).name.split('.')[0]}_results.jsonl", results)
