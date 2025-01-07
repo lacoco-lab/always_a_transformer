@@ -11,8 +11,12 @@ def get_base_accuracy(responses):
 
     correct = 0
     for response in responses:
-        if response['answer'] == response['last_valid_token']:
-            correct += 1
+        try:
+            if int(response['answer']) == int(response['last_valid_token']):
+                correct += 1
+        except Exception as e:
+            print(f'Invalid response given {response['answer']}')
+            continue
 
     return correct / len(responses)
 
@@ -105,7 +109,7 @@ def get_per_dist_accuracy(responses):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--path", type=str, default="OLMo_7B-instruct/flipflop_10_results.jsonl", help="Dir Path to the results")
+    ap.add_argument("--path", type=str, default="OLMo_7B/distance/s1/flipflop_20_w0_results.jsonl", help="Dir Path to the results")
     ap.add_argument("--dist", type=int, default=4, help="Distance between last write and read instructions")
     ap.add_argument("--digit", type=int, default=0, help="Digit to calculate the accuracy for")
     ap.add_argument("--dist_beg", type=int, default=2, help="Beginning of the distance range for last write and read")
@@ -117,5 +121,5 @@ if __name__ == "__main__":
 
     print(f"Baseline accuracy for FlipFlop task is {get_base_accuracy(data)}")
     #print(f"Accuracy for the distance {args.dist} is {get_strict_distance_accuracy(args.dist, data)}")
-    print(f"Accuracy for the digit {args.digit} is {get_digit_accuracy(data, args.digit)}")
+    #print(f"Accuracy for the digit {args.digit} is {get_digit_accuracy(data, args.digit)}")
     #print(f"Accuracy for the range in distance {args.dist_beg}-{args.dist_end} is {get_relaxed_distance_accuracy(args.dist_beg, args.dist_end, data)}")
