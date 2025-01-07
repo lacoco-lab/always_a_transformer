@@ -1,0 +1,1 @@
+{"files":[{"text":"Print the digit (i.e., 0 or 1) after the **right most** 'write' instruction from the given Input sequence.\n\nInput sequence: {{ input }}\n\nDigit after the last 'write' instruction:","name":"task","version":"0","metadata":{}}]}
