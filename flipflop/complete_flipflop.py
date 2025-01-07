@@ -43,7 +43,7 @@ if __name__ == "__main__":
         else:
             raise ValueError("Invalid input file type")
 
-    registry = DirectoryPromptRegistry(Path("prompts/flipflop_zero-shot_completion_worded"), force_reindex=True)
+    registry = DirectoryPromptRegistry(Path("prompts/flipflop_zero-shot_completion_v0"), force_reindex=True)
     task_prompt = registry.get(name="task")
 
     if not Path(args.save_path).exists():
