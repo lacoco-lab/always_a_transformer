@@ -1,3 +1,7 @@
 .idea
-*/__pycache__
+**my_local_bash.sh
+**/__pycache__
 .DS_Store
+**/.ipynb_checkpoints/
+**/es_config_8.yml
+olmo_indexer/es_config.yml
