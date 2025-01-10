@@ -1,6 +1,45 @@
 import random
 
 
+def generate_flip_flop_with_distance(length, w_idx):
+    """
+    Generate valid FlipFlop string by specifying the distance between last write and read
+    :param length: int, length of the generated string
+    :param w_idx: int, at which index you want your write to be
+    :return: str, valid flipflop string
+    """
+
+    # sanity checks for length
+    assert length % 2 == 0  and length >= 4 and length-4 >= 0
+    assert w_idx % 2 == 0 and w_idx <= length-4
+
+    flipflop_str = ['w', random.choice(['0', '1'])]
+    last_written_bit = flipflop_str[1]
+
+    for i in range(2, length - 2, 2):
+
+        if i == w_idx:
+            instruction = 'w'
+            data_bit = random.choice(['0', '1'])
+            last_written_bit = data_bit
+        else:
+            instruction = random.choice(['r', 'i'])
+
+            if instruction == 'r':
+                data_bit = last_written_bit
+            elif instruction == 'i':
+                data_bit = random.choice(['0', '1'])
+
+        flipflop_str.append(instruction)
+        flipflop_str.append(data_bit)
+
+    flipflop_str.append('r')
+    flipflop_str.append(last_written_bit)
+
+    return ''.join(flipflop_str)
+
+
+
 def generate_flip_flop(length, prob_w, prob_r):
     """
     Generate valid FlipFlop string:
@@ -13,9 +52,9 @@ def generate_flip_flop(length, prob_w, prob_r):
     :return: str, valid flipflop string
     """
 
-    assert length % 2 == 0 # the flipflop string must be even, because all instructions come with a data bit
-    assert prob_w + prob_r <= 1 # sanity check for the probabilities
-    assert length >= 4 # sanity check for the length
+    assert length % 2 == 0  # the flipflop string must be even, because all instructions come with a data bit
+    assert prob_w + prob_r <= 1  # sanity check for the probabilities
+    assert length >= 4  # sanity check for the length
 
     prob_i = 1 - prob_w - prob_r
 
@@ -81,19 +120,28 @@ def validate_flip_flop(flipflop_str):
     """
     Check if the FlipFlop string is valid
     :param flipflop_str: str, FlipFlop string to check
-    :return: None or raise Validation error
+    :return: True or raise Validation error
     """
 
     assert len(flipflop_str) >= 4 and len(flipflop_str) % 2 == 0
     assert flipflop_str[0] == 'w' and flipflop_str[len(flipflop_str)-2] == 'r'
     assert set(flipflop_str).issubset({'w', 'r', 'i', '1', '0'})
 
-    displayed_bit = flipflop_str[len(flipflop_str)-1]
-    assert displayed_bit in ['0', '1']
+    last_displayed_bit = flipflop_str[len(flipflop_str)-1]
+    assert last_displayed_bit in ['0', '1']
 
-    for i in range(len(flipflop_str)-3, -1, -1):
-        if flipflop_str[i] == 'w':
-            assert displayed_bit == flipflop_str[i+1]
-            return None
+    reversed_flipflop = flipflop_str.strip()[::-1]
+    current_idx = 1
+    displayed_bit = last_displayed_bit
 
-    raise ValueError(f'FlipFlop string {flipflop_str} is not valid, no "write" instruction was found.')
+    while current_idx < len(reversed_flipflop):
+        if reversed_flipflop[current_idx] == 'r':
+            displayed_bit = reversed_flipflop[current_idx-1]
+        elif reversed_flipflop[current_idx] == 'w':
+            assert displayed_bit == reversed_flipflop[current_idx-1], (f"Read bit {displayed_bit} does not match the "
+                                                                       f"written bit "
+                                                                       f"{reversed_flipflop[current_idx-1]} "
+                                                                       f"at index {len(flipflop_str)-current_idx+1}.")
+        current_idx += 2
+
+    return True
