@@ -344,217 +344,217 @@ vllm serve allenai/OLMo-7B-0724-Instruct-hf --tensor-parallel-size 2 --gpu-memor
 # We want to shut down the VLLM server after the experiment is done, so we need its PID
 VLLMPID=$!
 
-BASE_INPUT_DIR="datasets/flipflop/distance"
-BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance"
-PROMPT_PATH="prompts/flipflop_zero-shot_chat_v0"
+#BASE_INPUT_DIR="datasets/flipflop/distance"
+#BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance"
+#PROMPT_PATH="prompts/flipflop_zero-shot_chat_v0"
+#
+#for SUBFOLDER in s1 s2 s3 s4 s5; do
+#  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
+#  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
+#
+#  mkdir -p "$OUTPUT_DIR"
+#
+#  for INPUT_FILE in "$INPUT_DIR"/*; do
+#    if [[ -f $INPUT_FILE ]]; then
+#      BASENAME=$(basename "$INPUT_FILE" .txt)
+#
+#      echo "Processing file: $INPUT_FILE"
+#      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
+#
+#      python flipflop/prompt_flipflop.py \
+#        --ip_path "$INPUT_FILE" \
+#        --save_path "$OUTPUT_DIR" \
+#        --engine openai \
+#        --prompt_path "$PROMPT_PATH"
+#    fi
+#  done
+#done
+#
+#BASE_INPUT_DIR="datasets/flipflop/distance-worded"
+#BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-worded"
+#PROMPT_PATH="prompts/flipflop_zero-shot_chat_worded"
+#
+#for SUBFOLDER in s1 s2 s3 s4 s5; do
+#  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
+#  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
+#
+#  mkdir -p "$OUTPUT_DIR"
+#
+#  for INPUT_FILE in "$INPUT_DIR"/*; do
+#    if [[ -f $INPUT_FILE ]]; then
+#      BASENAME=$(basename "$INPUT_FILE" .txt)
+#
+#      echo "Processing file: $INPUT_FILE"
+#      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
+#
+#      python flipflop/prompt_flipflop.py \
+#        --ip_path "$INPUT_FILE" \
+#        --save_path "$OUTPUT_DIR" \
+#        --engine openai \
+#        --prompt_path "$PROMPT_PATH"
+#    fi
+#  done
+#done
+#
+#BASE_INPUT_DIR="datasets/flipflop/distance"
+#BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-qa"
+#PROMPT_PATH="prompts/flipflop_qa_zero-shot_chat_v0"
+#
+#for SUBFOLDER in s1 s2 s3 s4 s5; do
+#  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
+#  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
+#
+#  mkdir -p "$OUTPUT_DIR"
+#
+#  for INPUT_FILE in "$INPUT_DIR"/*; do
+#    if [[ -f $INPUT_FILE ]]; then
+#      BASENAME=$(basename "$INPUT_FILE" .txt)
+#
+#      echo "Processing file: $INPUT_FILE"
+#      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
+#
+#      python flipflop/prompt_flipflop.py \
+#        --ip_path "$INPUT_FILE" \
+#        --save_path "$OUTPUT_DIR" \
+#        --engine openai \
+#        --prompt_path "$PROMPT_PATH"
+#    fi
+#  done
+#done
+#
+#BASE_INPUT_DIR="datasets/flipflop/distance-worded"
+#BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-qa-worded"
+#PROMPT_PATH="prompts/flipflop_qa_zero-shot_chat_worded"
+#
+#for SUBFOLDER in s1 s2 s3 s4 s5; do
+#  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
+#  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
+#
+#  mkdir -p "$OUTPUT_DIR"
+#
+#  for INPUT_FILE in "$INPUT_DIR"/*; do
+#    if [[ -f $INPUT_FILE ]]; then
+#      BASENAME=$(basename "$INPUT_FILE" .txt)
+#
+#      echo "Processing file: $INPUT_FILE"
+#      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
+#
+#      python flipflop/prompt_flipflop.py \
+#        --ip_path "$INPUT_FILE" \
+#        --save_path "$OUTPUT_DIR" \
+#        --engine openai \
+#        --prompt_path "$PROMPT_PATH"
+#    fi
+#  done
+#done
+#
+#BASE_INPUT_DIR="datasets/flipflop/distance"
+#BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-masked"
+#PROMPT_PATH="prompts/flipflop_mask_zero-shot_chat_v0"
+#
+#for SUBFOLDER in s1 s2 s3 s4 s5; do
+#  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
+#  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
+#
+#  mkdir -p "$OUTPUT_DIR"
+#
+#  for INPUT_FILE in "$INPUT_DIR"/*; do
+#    if [[ -f $INPUT_FILE ]]; then
+#      BASENAME=$(basename "$INPUT_FILE" .txt)
+#
+#      echo "Processing file: $INPUT_FILE"
+#      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
+#
+#      python flipflop/prompt_flipflop.py \
+#        --ip_path "$INPUT_FILE" \
+#        --save_path "$OUTPUT_DIR" \
+#        --engine openai \
+#        --prompt_path "$PROMPT_PATH"
+#    fi
+#  done
+#done
 
-for SUBFOLDER in s1 s2 s3 s4 s5; do
-  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
-  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
-
-  mkdir -p "$OUTPUT_DIR"
-
-  for INPUT_FILE in "$INPUT_DIR"/*; do
-    if [[ -f $INPUT_FILE ]]; then
-      BASENAME=$(basename "$INPUT_FILE" .txt)
-
-      echo "Processing file: $INPUT_FILE"
-      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
-
-      python flipflop/prompt_flipflop.py \
-        --ip_path "$INPUT_FILE" \
-        --save_path "$OUTPUT_DIR" \
-        --engine openai \
-        --prompt_path "$PROMPT_PATH"
-    fi
-  done
-done
-
-BASE_INPUT_DIR="datasets/flipflop/distance-worded"
-BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-worded"
-PROMPT_PATH="prompts/flipflop_zero-shot_chat_worded"
-
-for SUBFOLDER in s1 s2 s3 s4 s5; do
-  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
-  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
-
-  mkdir -p "$OUTPUT_DIR"
-
-  for INPUT_FILE in "$INPUT_DIR"/*; do
-    if [[ -f $INPUT_FILE ]]; then
-      BASENAME=$(basename "$INPUT_FILE" .txt)
-
-      echo "Processing file: $INPUT_FILE"
-      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
-
-      python flipflop/prompt_flipflop.py \
-        --ip_path "$INPUT_FILE" \
-        --save_path "$OUTPUT_DIR" \
-        --engine openai \
-        --prompt_path "$PROMPT_PATH"
-    fi
-  done
-done
-
-BASE_INPUT_DIR="datasets/flipflop/distance"
-BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-qa"
-PROMPT_PATH="prompts/flipflop_qa_zero-shot_chat_v0"
-
-for SUBFOLDER in s1 s2 s3 s4 s5; do
-  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
-  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
-
-  mkdir -p "$OUTPUT_DIR"
-
-  for INPUT_FILE in "$INPUT_DIR"/*; do
-    if [[ -f $INPUT_FILE ]]; then
-      BASENAME=$(basename "$INPUT_FILE" .txt)
-
-      echo "Processing file: $INPUT_FILE"
-      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
-
-      python flipflop/prompt_flipflop.py \
-        --ip_path "$INPUT_FILE" \
-        --save_path "$OUTPUT_DIR" \
-        --engine openai \
-        --prompt_path "$PROMPT_PATH"
-    fi
-  done
-done
-
-BASE_INPUT_DIR="datasets/flipflop/distance-worded"
-BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-qa-worded"
-PROMPT_PATH="prompts/flipflop_qa_zero-shot_chat_worded"
-
-for SUBFOLDER in s1 s2 s3 s4 s5; do
-  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
-  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
-
-  mkdir -p "$OUTPUT_DIR"
-
-  for INPUT_FILE in "$INPUT_DIR"/*; do
-    if [[ -f $INPUT_FILE ]]; then
-      BASENAME=$(basename "$INPUT_FILE" .txt)
-
-      echo "Processing file: $INPUT_FILE"
-      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
-
-      python flipflop/prompt_flipflop.py \
-        --ip_path "$INPUT_FILE" \
-        --save_path "$OUTPUT_DIR" \
-        --engine openai \
-        --prompt_path "$PROMPT_PATH"
-    fi
-  done
-done
-
-BASE_INPUT_DIR="datasets/flipflop/distance"
-BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-masked"
-PROMPT_PATH="prompts/flipflop_mask_zero-shot_chat_v0"
-
-for SUBFOLDER in s1 s2 s3 s4 s5; do
-  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
-  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
-
-  mkdir -p "$OUTPUT_DIR"
-
-  for INPUT_FILE in "$INPUT_DIR"/*; do
-    if [[ -f $INPUT_FILE ]]; then
-      BASENAME=$(basename "$INPUT_FILE" .txt)
-
-      echo "Processing file: $INPUT_FILE"
-      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
-
-      python flipflop/prompt_flipflop.py \
-        --ip_path "$INPUT_FILE" \
-        --save_path "$OUTPUT_DIR" \
-        --engine openai \
-        --prompt_path "$PROMPT_PATH"
-    fi
-  done
-done
-
-BASE_INPUT_DIR="datasets/flipflop/distance-worded"
-BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-masked-worded"
-PROMPT_PATH="prompts/flipflop_mask_zero-shot_chat_worded"
-
-for SUBFOLDER in s1 s2 s3 s4 s5; do
-  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
-  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
-
-  mkdir -p "$OUTPUT_DIR"
-
-  for INPUT_FILE in "$INPUT_DIR"/*; do
-    if [[ -f $INPUT_FILE ]]; then
-      BASENAME=$(basename "$INPUT_FILE" .txt)
-
-      echo "Processing file: $INPUT_FILE"
-      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
-
-      python flipflop/prompt_flipflop.py \
-        --ip_path "$INPUT_FILE" \
-        --save_path "$OUTPUT_DIR" \
-        --engine openai \
-        --prompt_path "$PROMPT_PATH"
-    fi
-  done
-done
-
-# --------------------------------------------------------------------------------------------
-# SPARSE INSTRUCT OLMo-7B
-# --------------------------------------------------------------------------------------------
-
-BASE_INPUT_DIR="datasets/flipflop/sparse"
-BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/sparse"
-PROMPT_PATH="prompts/flipflop_zero-shot_chat_v0"
-
-for SUBFOLDER in s1 s2 s3 s4 s5; do
-  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
-  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
-
-  mkdir -p "$OUTPUT_DIR"
-
-  for INPUT_FILE in "$INPUT_DIR"/*; do
-    if [[ -f $INPUT_FILE ]]; then
-      BASENAME=$(basename "$INPUT_FILE" .txt)
-
-      echo "Processing file: $INPUT_FILE"
-      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
-
-      python flipflop/prompt_flipflop.py \
-        --ip_path "$INPUT_FILE" \
-        --save_path "$OUTPUT_DIR" \
-        --engine openai \
-        --prompt_path "$PROMPT_PATH"
-    fi
-  done
-done
-
-BASE_INPUT_DIR="datasets/flipflop/sparse-worded"
-BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/sparse-worded"
-PROMPT_PATH="prompts/flipflop_zero-shot_chat_worded"
-
-for SUBFOLDER in s1 s2 s3 s4 s5; do
-  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
-  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
-
-  mkdir -p "$OUTPUT_DIR"
-
-  for INPUT_FILE in "$INPUT_DIR"/*; do
-    if [[ -f $INPUT_FILE ]]; then
-      BASENAME=$(basename "$INPUT_FILE" .txt)
-
-      echo "Processing file: $INPUT_FILE"
-      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
-
-      python flipflop/prompt_flipflop.py \
-        --ip_path "$INPUT_FILE" \
-        --save_path "$OUTPUT_DIR" \
-        --engine openai \
-        --prompt_path "$PROMPT_PATH"
-    fi
-  done
-done
+#BASE_INPUT_DIR="datasets/flipflop/distance-worded"
+#BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/distance-masked-worded"
+#PROMPT_PATH="prompts/flipflop_mask_zero-shot_chat_worded"
+#
+#for SUBFOLDER in s1 s2 s3 s4 s5; do
+#  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
+#  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
+#
+#  mkdir -p "$OUTPUT_DIR"
+#
+#  for INPUT_FILE in "$INPUT_DIR"/*; do
+#    if [[ -f $INPUT_FILE ]]; then
+#      BASENAME=$(basename "$INPUT_FILE" .txt)
+#
+#      echo "Processing file: $INPUT_FILE"
+#      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
+#
+#      python flipflop/prompt_flipflop.py \
+#        --ip_path "$INPUT_FILE" \
+#        --save_path "$OUTPUT_DIR" \
+#        --engine openai \
+#        --prompt_path "$PROMPT_PATH"
+#    fi
+#  done
+#done
+#
+## --------------------------------------------------------------------------------------------
+## SPARSE INSTRUCT OLMo-7B
+## --------------------------------------------------------------------------------------------
+#
+#BASE_INPUT_DIR="datasets/flipflop/sparse"
+#BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/sparse"
+#PROMPT_PATH="prompts/flipflop_zero-shot_chat_v0"
+#
+#for SUBFOLDER in s1 s2 s3 s4 s5; do
+#  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
+#  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
+#
+#  mkdir -p "$OUTPUT_DIR"
+#
+#  for INPUT_FILE in "$INPUT_DIR"/*; do
+#    if [[ -f $INPUT_FILE ]]; then
+#      BASENAME=$(basename "$INPUT_FILE" .txt)
+#
+#      echo "Processing file: $INPUT_FILE"
+#      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
+#
+#      python flipflop/prompt_flipflop.py \
+#        --ip_path "$INPUT_FILE" \
+#        --save_path "$OUTPUT_DIR" \
+#        --engine openai \
+#        --prompt_path "$PROMPT_PATH"
+#    fi
+#  done
+#done
+#
+#BASE_INPUT_DIR="datasets/flipflop/sparse-worded"
+#BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/sparse-worded"
+#PROMPT_PATH="prompts/flipflop_zero-shot_chat_worded"
+#
+#for SUBFOLDER in s1 s2 s3 s4 s5; do
+#  INPUT_DIR="$BASE_INPUT_DIR/$SUBFOLDER"
+#  OUTPUT_DIR="$BASE_OUTPUT_DIR/$SUBFOLDER"
+#
+#  mkdir -p "$OUTPUT_DIR"
+#
+#  for INPUT_FILE in "$INPUT_DIR"/*; do
+#    if [[ -f $INPUT_FILE ]]; then
+#      BASENAME=$(basename "$INPUT_FILE" .txt)
+#
+#      echo "Processing file: $INPUT_FILE"
+#      echo "Running Prompt: $PROMPT_PATH with model: OLMo-7B-instruct"
+#
+#      python flipflop/prompt_flipflop.py \
+#        --ip_path "$INPUT_FILE" \
+#        --save_path "$OUTPUT_DIR" \
+#        --engine openai \
+#        --prompt_path "$PROMPT_PATH"
+#    fi
+#  done
+#done
 
 BASE_INPUT_DIR="datasets/flipflop/sparse"
 BASE_OUTPUT_DIR="results/flipflop/OLMo_7B-instruct/sparse-qa"
