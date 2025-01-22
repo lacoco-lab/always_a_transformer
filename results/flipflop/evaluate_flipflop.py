@@ -15,7 +15,7 @@ def get_base_accuracy(responses):
             if int(response['answer']) == int(response['last_valid_token']):
                 correct += 1
         except Exception as e:
-            print(f'Invalid response given {response['answer']}')
+            #print(f'Invalid response given {response['answer']}')
             continue
 
     return correct / len(responses)
