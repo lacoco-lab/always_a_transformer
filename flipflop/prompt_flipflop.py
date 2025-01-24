@@ -40,6 +40,7 @@ if __name__ == "__main__":
     ap.add_argument("--engine", type=str, required=True, help="Engine to use for inference")
     ap.add_argument("--prompt_path", type=str, required=True, help="Path to the prompt registry directory")
     ap.add_argument("--save_path", type=str, nargs='?', default="results/flipflop", help="Dir Path to save results in jsonlines")
+    ap.add_argument("--port", type=str, required=False, default="8080", help="Port to use for the server")
     args = ap.parse_args()
 
     with open(args.ip_path) as reader:
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
     #base_url = "http://134.96.104.203:8080/v1" # Run this if you are running locally and want to ping Mayank's machine
-    base_url = "http://0.0.0.0:8080/v1" # Run this from the coli server
+    base_url = f"http://0.0.0.0:{args.port}/v1" # Run this from the coli server
 
     if "openai" in args.engine:
         wait_for_engine_to_start(base_url)
