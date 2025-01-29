@@ -17,10 +17,12 @@ def process_jsonlines_folder(folder_path):
                     if line.strip():
                         data = json.loads(line)
                         # Modify the 'answer' field by removing the last '.' if it exists
-                        if "A" in data['answer']:
-                            data["answer"] = data["answer"].replace("A", "0")
-                        elif "B" in data['answer']:
-                            data['answer'] = data["answer"].replace("B", "1")
+                        #if "A" in data['answer']:
+                         #   data["answer"] = data["answer"].replace("A", "0")
+                        #elif "B" in data['answer']:
+                        #    data['answer'] = data["answer"].replace("B", "1")
+                        if '.' in data['answer']:
+                            data['answer'] = data['answer'].replace('.', '')
                         # Write the updated data back to the file
                         outfile.write(json.dumps(data) + '\n')
 
@@ -72,7 +74,7 @@ def count_last_valid_tokens_in_files(file_paths):
 
 
 # List of file paths
-input_folder = "llama3.3_70B-instruct/distance-qa-worded/s1"
+input_folder = "OLMo2_13B/sparse/s5"
 process_jsonlines_folder(input_folder)
 
 print("Processed ", input_folder)
