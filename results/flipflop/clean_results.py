@@ -74,7 +74,7 @@ def count_last_valid_tokens_in_files(file_paths):
 
 
 # List of file paths
-input_folder = ("OLMo2_13B-instruct/sparse-qa/s1")
+input_folder = ("llama3.1_70B-instruct/distance-qa/s5")
 process_jsonlines_folder(input_folder)
 
 print("Processed ", input_folder)
