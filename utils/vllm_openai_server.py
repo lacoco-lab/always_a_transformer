@@ -3,16 +3,10 @@ import requests
 
 from time import sleep
 
-
 from more_itertools import chunked
 from tqdm.asyncio import tqdm
 
-
-INFERENCE_PARAMS = {"seed": 5, "max_tokens": 300, "temperature": 0, "stop": "<end>", "logprobs": True,
-                    "extra_body": {"top_k": 1}}
-
-COMPLETION_INFERENCE_PARAMS = {"seed": 5, "max_tokens": 1, "temperature": 0, "logprobs": True,
-                               "extra_body": {"top_k": 1}}
+from utils.inference_constants import INSTRUCT_INFERENCE_PARAMS, COMPLETION_INFERENCE_PARAMS
 
 
 def wait_for_engine_to_start(server_url, secs=5):
@@ -56,10 +50,11 @@ def construct_vllm_chat_prompt(task_prompt, system_prompt):
     ]
 
 
-async def openai_single_chat(data, client, task_prompt, system_prompt, spaced_input=False, xid="task-{}"):
+async def openai_single_chat(data, client, task_prompt, system_prompt, spaced_input=False, xid="task-{}", 
+                             inference_params=INSTRUCT_INFERENCE_PARAMS):
     q_tasks = []
     async for d_idx, d in _prepare_prompts(data, task_prompt, spaced=spaced_input):
-        q_task = asyncio.create_task(openai_vllm_chat(client, d, system_prompt.text(), INFERENCE_PARAMS,
+        q_task = asyncio.create_task(openai_vllm_chat(client, d, system_prompt.text(), inference_params,
                                                       xid=xid.format(d_idx)))
         q_tasks.append(q_task)
 
@@ -68,11 +63,12 @@ async def openai_single_chat(data, client, task_prompt, system_prompt, spaced_in
     return responses
 
 
-def batch_chat(data, client, task_prompt, system_prompt, batch_size=1000):
+def batch_chat(data, client, task_prompt, system_prompt, batch_size=1000, 
+               inference_params=INSTRUCT_INFERENCE_PARAMS):
     responses = []
     chunked_data = list(chunked(data, batch_size))
     for chunk in tqdm(chunked_data):
-        resp = asyncio.run(openai_single_chat(chunk, client, task_prompt, system_prompt))
+        resp = asyncio.run(openai_single_chat(chunk, client, task_prompt, system_prompt, inference_params=inference_params))
         responses.extend(resp)
     return responses
 
@@ -90,10 +86,10 @@ async def openai_vllm_complete(client, task_prompt, inference_params, xid="task"
     return response
 
 
-async def openai_single_complete(data, client, task_prompt):
+async def openai_single_complete(data, client, task_prompt, spaced_input=False, xid="task-{}", inference_params=COMPLETION_INFERENCE_PARAMS):
     q_tasks = []
     async for d_idx, d in _prepare_prompts(data, task_prompt):
-        q_task = asyncio.create_task(openai_vllm_complete(client, d, COMPLETION_INFERENCE_PARAMS, xid="task-{}".format(d_idx)))
+        q_task = asyncio.create_task(openai_vllm_complete(client, d, inference_params, xid=xid.format(d_idx)))
         q_tasks.append(q_task)
 
     await tqdm.gather(*q_tasks)
@@ -101,10 +97,10 @@ async def openai_single_complete(data, client, task_prompt):
     return responses
 
 
-def batch_complete(data, client, task_prompt, batch_size=1000):
+def batch_complete(data, client, task_prompt, batch_size=1000, inference_params=COMPLETION_INFERENCE_PARAMS):
     responses = []
     chunked_data = list(chunked(data, batch_size))
     for chunk in tqdm(chunked_data):
-        resp = asyncio.run(openai_single_complete(chunk, client, task_prompt))
+        resp = asyncio.run(openai_single_complete(chunk, client, task_prompt, inference_params=inference_params))
         responses.extend(resp)
     return responses
