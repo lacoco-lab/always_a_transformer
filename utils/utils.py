@@ -1,3 +1,4 @@
+import os
 import re
 
 from pathlib import Path
@@ -31,7 +32,10 @@ def save_to_jsonl(path, filename, list_of_dicts):
     :param list_of_dicts: data to save
     :return: void
     """
+    print(f"Saving to {path}/{filename}")
     out_path = Path(path, filename)
+    if not out_path.parent.exists():
+        os.makedirs(out_path.parent, exist_ok=True)
     with jsonlines.open(out_path, mode='w') as writer:
         writer.write_all(list_of_dicts)
         
@@ -104,3 +108,16 @@ def get_stop_token(task, task_type):
         return "NA"
     else:
         raise ValueError(f"Unknown task: {task}")
+
+
+def get_model_to_num_gpu_mapping(model: str):
+    if "70B" in model:
+        return 4
+    elif "13B" in model:
+        return 1
+    elif "7B" in model:
+        return 1
+    elif "8B" in model:
+        return 1
+    else:
+        raise ValueError(f"Unknown model size: {model}")
