@@ -6,8 +6,8 @@ from prompt_utils import render_prompt
 
 client = Together()
 system_path = "system.jinja"
-task_path = "templates/flipflop-traverse-left.jinja"
-output_file = "results/flipflop-traverse-left/flipflop_500_pw0.1.jsonl"
+task_path = "templates/flipflop-one-w-record.jinja"
+output_file = "results/flipflop-one-w-record/flipflop_500_pw0.1.jsonl"
 flipflop_data = "../results/flipflop/llama3.3_70B-instruct/sparse/s1/flipflop_500_pw0_results.jsonl"
 
 queries = []
