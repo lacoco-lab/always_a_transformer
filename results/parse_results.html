@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View CoT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>View CoT</h2>
+    <input type="file" id="fileInput" accept=".jsonl">
+    <button onclick="prevEntry()">Previous</button>
+    <button onclick="nextEntry()">Next</button>
+    <div id="output" class="output"></div>
+
+    <script>
+        let jsonData = [];
+        let currentIndex = 0;
+
+        document.getElementById("fileInput").addEventListener("change", loadJSON);
+
+        function loadJSON() {
+            const fileInput = document.getElementById("fileInput").files[0];
+            if (!fileInput) {
+                alert("Please select a JSONL file.");
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const lines = event.target.result.split('\n').filter(line => line.trim() !== "");
+                jsonData = lines.map(line => JSON.parse(line));
+                currentIndex = 0;
+                displayEntry();
+            };
+            
+            reader.readAsText(fileInput);
+        }
+
+        function displayEntry() {
+            let outputDiv = document.getElementById("output");
+            outputDiv.innerHTML = ""; // Clear previous content
+            
+            if (jsonData.length === 0) {
+                outputDiv.innerHTML = "No JSON data loaded.";
+                return;
+            }
+            
+            let item = jsonData[currentIndex];
+            let prompt = item.prompt !== undefined ? item.prompt : item.input;
+            let gold_answer = item.last_valid_token !== undefined ? item.last_valid_token : item.gold_ans_char;
+            let answer = item.answer
+            let full_answer = item.full_answer
+            
+            outputDiv.innerHTML = `<strong>Entry ${currentIndex + 1}/${jsonData.length}:</strong> <br><br> 
+                <strong>Prompt:</strong> <br>${prompt} <br><br> 
+                <strong>Gold Answer:</strong> ${gold_answer}<br><br> 
+                <strong>Model Answer:</strong> ${answer} <br><br> 
+                <strong>Model CoT:</strong> <br> ${full_answer.replace(/\n/g, '<br>').replace(/<answer>/g, '/answer/').replace(/<\/answer>/g, '/answer/')}`;
+        }
+
+        function prevEntry() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayEntry();
+            }
+        }
+
+        function nextEntry() {
+            if (currentIndex < jsonData.length - 1) {
+                currentIndex++;
+                displayEntry();
+            }
+        }
+    </script>
+</body>
+</html>
