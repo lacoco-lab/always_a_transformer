@@ -1,2 +1,2 @@
-python last_ones/prompt_last_ones.py --ip_path datasets/last_ones/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_s_last/ --save_path results/s_last_ones/
 python last_ones/prompt_last_ones.py --ip_path datasets/last_ones/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last/ --save_path results/last_ones/
+python last_ones/prompt_last_ones.py --ip_path datasets/last_ones/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_s_last/ --save_path results/s_last_ones/

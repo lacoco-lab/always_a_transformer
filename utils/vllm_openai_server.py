@@ -67,13 +67,13 @@ def batch_chat(data, client, task_prompt, system_prompt, batch_size=1000,
                inference_params=INSTRUCT_INFERENCE_PARAMS):
     responses = []
     chunked_data = list(chunked(data, batch_size))
-    batch_cnt = 0
+    # batch_cnt = 0
     for chunk in tqdm(chunked_data):
         resp = asyncio.run(openai_single_chat(chunk, client, task_prompt, system_prompt, inference_params=inference_params))
         responses.extend(resp)
-        batch_cnt += 1
-        if batch_cnt == 5:
-            break
+        # batch_cnt += 1
+        # if batch_cnt == 5:
+        #     break
     return responses
 
 
