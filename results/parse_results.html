@@ -62,11 +62,16 @@
             }
             
             let item = jsonData[currentIndex];
+            let prompt = item.prompt !== undefined ? item.prompt : item.input;
+            let gold_answer = item.last_valid_token !== undefined ? item.last_valid_token : item.gold_ans_char;
+            let answer = item.answer
+            let full_answer = item.full_answer
+            
             outputDiv.innerHTML = `<strong>Entry ${currentIndex + 1}/${jsonData.length}:</strong> <br><br> 
-                <strong>Prompt:</strong> <br>${item.prompt} <br><br> 
-                <strong>Gold Answer:</strong> ${item.last_valid_token}<br><br> 
-                <strong>Model Answer:</strong> ${item.answer} <br><br> 
-                <strong>Model CoT:</strong> <br> ${item.full_answer.replace(/\n/g, '<br>').replace(/<answer>/g, '/answer/').replace(/<\/answer>/g, '/answer/')}`;
+                <strong>Prompt:</strong> <br>${prompt} <br><br> 
+                <strong>Gold Answer:</strong> ${gold_answer}<br><br> 
+                <strong>Model Answer:</strong> ${answer} <br><br> 
+                <strong>Model CoT:</strong> <br> ${full_answer.replace(/\n/g, '<br>').replace(/<answer>/g, '/answer/').replace(/<\/answer>/g, '/answer/')}`;
         }
 
         function prevEntry() {
