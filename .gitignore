@@ -5,3 +5,4 @@
 **/.ipynb_checkpoints/
 **/es_config_8.yml
 olmo_indexer/es_config.yml
+results/majority/**
