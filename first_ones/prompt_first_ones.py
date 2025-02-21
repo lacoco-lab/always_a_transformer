@@ -10,7 +10,7 @@ from banks.registries import DirectoryPromptRegistry
 from utils.vllm_openai_server import batch_chat, wait_for_engine_to_start
 from utils.utils import save_to_jsonl
 
-INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 16000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
+INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
                              "extra_body": {"top_k": -1}}
 
 
@@ -63,4 +63,5 @@ if __name__ == "__main__":
     client = openai.AsyncClient(base_url=base_url, api_key="sk_noreq", max_retries=10)
     results = batch_chat(first_ones, client, task_prompt, system_prompt, inference_params=INSTRUCT_INFERENCE_PARAMS, batch_size=32)
     results = merge_data_with_responses(data, results)
-    save_to_jsonl(args.save_path, "500_hard_all.jsonl", results)
+    save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
+    save_to_jsonl(str(save_path), "500_hard_all.jsonl", results)
