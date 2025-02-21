@@ -38,7 +38,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--ip_path", type=str, required=True, help="Dir Path to the dataset")
     ap.add_argument("--prompt_path", type=str, required=True, help="Path to the prompt registry directory")
-    ap.add_argument("--save_path", type=str, nargs='?', default="results/flipflop", help="Dir Path to save results in jsonlines")
+    ap.add_argument("--save_path", type=str, nargs='?', default="results/last_ones/llama3.3_70B-instruct", help="Dir Path to save results in jsonlines")
     ap.add_argument("--port", type=str, required=False, default="8080", help="Port to use for the server")
     args = ap.parse_args()
     
@@ -63,4 +63,4 @@ if __name__ == "__main__":
     client = openai.AsyncClient(base_url=base_url, api_key="sk_noreq", max_retries=10)
     results = batch_chat(last_ones, client, task_prompt, system_prompt, inference_params=INSTRUCT_INFERENCE_PARAMS, batch_size=32)
     results = merge_data_with_responses(data, results, task="s_last" if "_s_last" in args.prompt_path else "last")
-    save_to_jsonl(args.save_path, "olmo_7b_instruct.jsonl", results)
+    save_to_jsonl(args.save_path, "500_hard_all.jsonl", results)
