@@ -1,6 +1,7 @@
 import sys
 import numpy as np
-from flipflop_generator import generate_all_valid_flipflops, validate_flip_flop, generate_flip_flop, generate_flip_flop_with_distance
+from flipflop_generator import (generate_all_valid_flipflops, validate_flip_flop, generate_flip_flop, generate_flip_flop_with_distance, 
+                                generate_relaxed_flip_flop, generate_all_valid_relaxed_flipflops)
 
 
 """
@@ -14,9 +15,8 @@ where 4 is the lower boundary and 20 is the upper boundary.
 Strings are saved as a numpy file in the datasets/flipflop.
 """
 
+path = "../datasets/flipflop"
 
-length, pw, pr, limit = sys.argv[1:]
-path = "datasets/flipflop"
 
 def generate_from_to(start_length, finish_length):
     """
@@ -42,6 +42,49 @@ def generate_from_to(start_length, finish_length):
                 continue
 
         print(f"Generated {valid_flipflops_count} strings for length {length}.")
+
+    return all_valid_flipflops
+
+
+def generate_with_density_relaxed(length, pw, pr, limit=1000):
+    """
+    Generate all valid flipflops in the range of strings of a certain length with probability density.
+    :param length:  int
+    :param pw: float
+    :param pr: float
+    :return: list of flipflops
+    """
+
+    all_valid_flipflops = []
+    valid_flipflops_count = 0
+    zero_count = 0
+    one_count = 0
+
+    while valid_flipflops_count < limit:
+        flipflop = generate_relaxed_flip_flop(length, pw, pr)
+
+        try:
+            validate_flip_flop(flipflop)
+            if 'w' not in flipflop:
+                continue
+
+            digit = flipflop[flipflop.find('w') - 1]
+            zero_count += digit == '0'
+            one_count += digit == '1'
+
+            if abs(zero_count - one_count) > 1:
+                zero_count -= digit == '0'
+                one_count -= digit == '1'
+                continue
+            
+            if flipflop in all_valid_flipflops:
+                continue
+            all_valid_flipflops.append(flipflop)
+            valid_flipflops_count += 1
+        except AssertionError:
+            continue
+
+    print(f"Generated {valid_flipflops_count} strings for length {length} with pw of {pw} and pr of {pr}.")
 
     return all_valid_flipflops
 
@@ -108,9 +151,10 @@ def generate_with_distance_w(length, w_idx, limit=1000):
 
     return all_valid_flipflops
 
+
 for length in range(10, 510, 10):
-    all_valid_flipflops = generate_with_density(int(length), 0.1, 0.1, 100)
-    save_path = path + f"/sparse/s5/flipflop_{length}_pw{pw}.txt"
+    all_valid_flipflops = generate_with_density_relaxed(int(length), 0.1, 0.1, 100)
+    save_path = path + f"/before-first/s5/flipflop_{length}.txt"
     np.savetxt(save_path, all_valid_flipflops, delimiter='\n', fmt='%s')
 
-print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {save_path}/flipflop_{length}_pw{pw}.txt.")
+print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {save_path}/flipflop_{length}.txt.")
