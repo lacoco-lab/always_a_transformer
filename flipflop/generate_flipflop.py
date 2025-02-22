@@ -155,7 +155,7 @@ def generate_with_distance_w(length, w_idx, limit=1000):
 for i in range(5):
     for length in range(10, 510, 10):
         all_valid_flipflops = generate_with_density(int(length), 0.1, 0.1, 100)
-        save_path = path + f"/replaced-instructions/s{i+1}/flipflop_{length}.txt"
+        save_path = path + f"/replaced-all/s{i+1}/flipflop_{length}.txt"
         np.savetxt(save_path, all_valid_flipflops, delimiter='\n', fmt='%s')
 
 print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {save_path}/flipflop_{length}.txt.")

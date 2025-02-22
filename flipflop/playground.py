@@ -29,17 +29,17 @@ The script will perform the validation of the string and raise an error in case 
 according to the canonical form.
 """
 
-path = '../datasets/flipflop/before-first/s5'
-
-for filename in glob.glob(os.path.join(path, '*.txt')):
-    data = []
-    valid_count = 0
-    with open(os.path.join(os.getcwd(), filename), 'r') as f:
-        for line in f:
-            data.append(line.strip())
+for i in range(5):
+    path = f'../datasets/replaced-digits/s{i+1}'
+    for filename in glob.glob(os.path.join(path, '*.txt')):
+        data = []
+        valid_count = 0
+        with open(os.path.join(os.getcwd(), filename), 'r') as f:
+            for line in f:
+                data.append(line.strip())
+                
+            for line in data:
+                validate_replaced_flip_flop(line)
+                valid_count += 1
             
-        for line in data:
-            validate_before_first(line)
-            valid_count += 1
-        
-        print(f'Finished validating file {filename}. {valid_count} strings valid out of {len(data)}')
+            print(f'Finished validating file {filename}. {valid_count} strings valid out of {len(data)}')

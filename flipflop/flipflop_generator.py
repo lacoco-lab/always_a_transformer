@@ -39,7 +39,7 @@ def generate_flip_flop_with_distance(length, w_idx):
     return ''.join(flipflop_str)
 
 
-def generate_replaced_flip_flop(length, prob_w, prob_r, digit_0='0', digit_1='1', write='c', read='d', ignore='e'):
+def generate_replaced_flip_flop(length, prob_w, prob_r, digit_0='a', digit_1='b', write='c', read='d', ignore='e'):
     """
     Generate valid FlipFlop string:
     1. always begins with 'w', ends with 'r'
@@ -279,7 +279,7 @@ def generate_all_valid_relaxed_flipflops(length):
     return [''.join(flipflop) for flipflop in valid_flipflops]
 
 
-def validate_replaced_flip_flop(flipflop_str, digit_1='0', digit_0 ='1', write='c', read='d', ignore='e'):
+def validate_replaced_flip_flop(flipflop_str, digit_1='a', digit_0 ='b', write='w', read='r', ignore='i'):
     """
     Check if the FlipFlop string is valid
     :param flipflop_str: str, FlipFlop string to check
