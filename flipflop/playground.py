@@ -1,5 +1,7 @@
 import sys
-from flipflop_generator import validate_flip_flop
+import os
+import glob
+from flipflop_generator import validate_flip_flop, validate_replaced_flip_flop, validate_before_first
 
 """
 This file explains FlipFlop and gives some examples.
@@ -27,6 +29,17 @@ The script will perform the validation of the string and raise an error in case 
 according to the canonical form.
 """
 
-flipflop_str = sys.argv[1]
+path = '../datasets/flipflop/before-first/s5'
 
-validate_flip_flop(flipflop_str)
+for filename in glob.glob(os.path.join(path, '*.txt')):
+    data = []
+    valid_count = 0
+    with open(os.path.join(os.getcwd(), filename), 'r') as f:
+        for line in f:
+            data.append(line.strip())
+            
+        for line in data:
+            validate_before_first(line)
+            valid_count += 1
+        
+        print(f'Finished validating file {filename}. {valid_count} strings valid out of {len(data)}')

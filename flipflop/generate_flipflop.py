@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 from flipflop_generator import (generate_all_valid_flipflops, validate_flip_flop, generate_flip_flop, generate_flip_flop_with_distance, 
-                                generate_relaxed_flip_flop, generate_all_valid_relaxed_flipflops)
+                                generate_relaxed_flip_flop, generate_replaced_flip_flop, validate_replaced_flip_flop)
 
 
 """
@@ -15,7 +15,7 @@ where 4 is the lower boundary and 20 is the upper boundary.
 Strings are saved as a numpy file in the datasets/flipflop.
 """
 
-path = "../datasets/flipflop"
+path = "../datasets"
 
 
 def generate_from_to(start_length, finish_length):
@@ -64,17 +64,17 @@ def generate_with_density_relaxed(length, pw, pr, limit=1000):
         flipflop = generate_relaxed_flip_flop(length, pw, pr)
 
         try:
-            validate_flip_flop(flipflop)
-            if 'w' not in flipflop:
+            #validate_flip_flop(flipflop)
+            if 'c' not in flipflop:
                 continue
 
-            digit = flipflop[flipflop.find('w') - 1]
-            zero_count += digit == '0'
-            one_count += digit == '1'
+            digit = flipflop[flipflop.find('c') - 1]
+            zero_count += digit == 'a'
+            one_count += digit == 'b'
 
             if abs(zero_count - one_count) > 1:
-                zero_count -= digit == '0'
-                one_count -= digit == '1'
+                zero_count -= digit == 'a'
+                one_count -= digit == 'b'
                 continue
             
             if flipflop in all_valid_flipflops:
@@ -104,12 +104,13 @@ def generate_with_density(length, pw, pr, limit=1000):
     all_valid_flipflops = []
 
     valid_flipflops_count = 0
+    
     while valid_flipflops_count < limit:
-        flipflop = generate_flip_flop(length, pw, pr)
-
+       
+        flipflop = generate_replaced_flip_flop(length, pw, pr)
         try:
-            validate_flip_flop(flipflop)
-            if flipflop is all_valid_flipflops:
+            validate_replaced_flip_flop(flipflop)
+            if flipflop in all_valid_flipflops:
                 continue
             all_valid_flipflops.append(flipflop)
             valid_flipflops_count += 1
@@ -151,10 +152,10 @@ def generate_with_distance_w(length, w_idx, limit=1000):
 
     return all_valid_flipflops
 
-
-for length in range(10, 510, 10):
-    all_valid_flipflops = generate_with_density_relaxed(int(length), 0.1, 0.1, 100)
-    save_path = path + f"/before-first/s5/flipflop_{length}.txt"
-    np.savetxt(save_path, all_valid_flipflops, delimiter='\n', fmt='%s')
+for i in range(5):
+    for length in range(10, 510, 10):
+        all_valid_flipflops = generate_with_density(int(length), 0.1, 0.1, 100)
+        save_path = path + f"/replaced-instructions/s{i+1}/flipflop_{length}.txt"
+        np.savetxt(save_path, all_valid_flipflops, delimiter='\n', fmt='%s')
 
 print(f"Saved {len(all_valid_flipflops)} valid FlipFlop strings to {save_path}/flipflop_{length}.txt.")
