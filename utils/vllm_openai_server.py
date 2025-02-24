@@ -40,7 +40,7 @@ async def openai_vllm_chat(client, task_prompt, system_prompt, inference_params,
 
 async def _prepare_prompts(data, task_prompt, spaced=False):
     for idx, d in enumerate(data):
-        yield idx, task_prompt.text({"input": " ".join(list(d.strip()[:-1])) if spaced else d.strip()[:-1]})
+        yield idx, task_prompt.text({"input": " ".join(list(d.strip())) if spaced else d.strip()})
 
 
 def construct_vllm_chat_prompt(task_prompt, system_prompt):
