@@ -18,11 +18,27 @@ def get_last_write_index(flipflop):
     :param flipflop: str
     :return: int
     """
-
     reversed_flipflop = flipflop[::-1]
     for idx, char in enumerate(reversed_flipflop):
         if char == 'w':
             return len(flipflop) - idx - 1
+
+
+def get_first_write_index(flipflop):
+    """
+    Get the index of the first write operation in the flipflop string
+    >> get_first_write_index("w0r0")
+    0
+    >> get_first_write_index("w0w1r0")
+    0
+    >> get_first_write_index("r0w1w0")
+    4
+    :param flipflop: str
+    :return: int
+    """
+    for idx, char in enumerate(flipflop):
+        if char == 'w':
+            return idx
 
 
 def save_to_jsonl(path, filename, list_of_dicts):
@@ -48,15 +64,11 @@ def _get_task_regex(task, task_type):
     """
     regex_id = f"{task}_{task_type}"
     if regex_id == "retrieve_instruct":
-        return r'<answer>(.*?)</answer>'
+        return r'<ans>(.*?)</ans>'
     elif regex_id == "retrieve_complete":
         return "NA"
-    elif regex_id == "mask_instruct":
-        return r'<sequence_start>(.*?)<sequence_end>'
-    elif regex_id == "mask_complete":
-        return r'<sequence_start>(.*?)<sequence_end>'
     elif regex_id == "qa_instruct":
-        return r'<answer>(.*?)</answer>'
+        return r'<ans>(.*?)</ans>'
     elif regex_id == "qa_complete":
         return "NA"
     else:

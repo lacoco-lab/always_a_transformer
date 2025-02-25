@@ -26,9 +26,14 @@ vllm serve /scratch/common_models/Llama-3.3-70B-Instruct --tensor-parallel-size 
 
 VLLMPID=$!
 
-python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "nocot" --save_path results/last_ones/llama3.3_70B-instruct --port $PORT
-python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "nocot" --save_path results/first_ones/llama3.3_70B-instruct --port $PORT
-python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "cot" --save_path results/last_ones/llama3.3_70B-instruct --port $PORT
-python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "cot" --save_path results/first_ones/llama3.3_70B-instruct --port $PORT
+#python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "nocot" --save_path results/first_ones/llama3.3_70B-instruct --port $PORT --first_char_type char
+#python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "cot" --save_path results/first_ones/llama3.3_70B-instruct --port $PORT --first_char_type char
+python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "nocot" --save_path results/first_ones/llama3.3_70B-instruct --port $PORT --first_char_type digit
+python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "cot" --save_path results/first_ones/llama3.3_70B-instruct --port $PORT --first_char_type digit
+
+#python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "nocot" --save_path results/last_ones/llama3.3_70B-instruct --port $PORT --last_char_type digit
+#python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "cot" --save_path results/last_ones/llama3.3_70B-instruct --port $PORT --last_char_type digit
+python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "nocot" --save_path results/last_ones/llama3.3_70B-instruct --port $PORT --last_char_type char
+python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "cot" --save_path results/last_ones/llama3.3_70B-instruct --port $PORT --last_char_type char
 
 kill $VLLMPID
