@@ -25,13 +25,13 @@ vllm serve /scratch/common_models/OLMo-7B-0724-Instruct-hf --tensor-parallel-siz
 
 VLLMPID=$!
 
-#python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "nocot" --save_path results/first_ones/OLMo_7B-instruct --port $PORT --first_char_type char
-#python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "cot" --save_path results/first_ones/OLMo_7B-instruct --port $PORT --first_char_type char
+python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "nocot" --save_path results/first_ones/OLMo_7B-instruct --port $PORT --first_char_type char
+python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "cot" --save_path results/first_ones/OLMo_7B-instruct --port $PORT --first_char_type char
 python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "nocot" --save_path results/first_ones/OLMo_7B-instruct --port $PORT --first_char_type digit
 python first_ones/prompt_first_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/first_ones/zero-shot_chat_first_v0 --cot "cot" --save_path results/first_ones/OLMo_7B-instruct --port $PORT --first_char_type digit
 
-#python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "nocot" --save_path results/last_ones/OLMo_7B-instruct --port $PORT --last_char_type digit
-#python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "cot" --save_path results/last_ones/OLMo_7B-instruct --port $PORT --last_char_type digit
+python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "nocot" --save_path results/last_ones/OLMo_7B-instruct --port $PORT --last_char_type digit
+python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "cot" --save_path results/last_ones/OLMo_7B-instruct --port $PORT --last_char_type digit
 python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "nocot" --save_path results/last_ones/OLMo_7B-instruct --port $PORT --last_char_type char
 python last_ones/prompt_last_ones.py --ip_path datasets/500/first_or_last/data.jsonl --prompt_path prompts/last_ones/zero-shot_chat_last_v0 --cot "cot" --save_path results/last_ones/OLMo_7B-instruct --port $PORT --last_char_type char
 
