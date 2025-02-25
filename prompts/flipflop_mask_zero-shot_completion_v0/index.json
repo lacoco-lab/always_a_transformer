@@ -1,1 +1,0 @@
-{"files":[{"text":"Mask the digit after the **right most** 'w' character with <masked_digit> tag in the \"Input\" string below.\nInput: {{ input }}\n\nThe masked sequence is <sequence_start> ","name":"task","version":"0","metadata":{}}]}

@@ -1,0 +1,1 @@
+{"files":[{"text":"What is the digit after the **right most** 'w' character from the \"Input\" string below?\nInput: {{ input }}\n\nChoose from these two options:\nA. 0\nB. 1\n\nThe answer option (from A or B) corresponding to the digit after the **right most** 'w' character is: ","name":"task","version":"0","metadata":{}}]}
