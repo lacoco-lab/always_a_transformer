@@ -1,5 +1,6 @@
 import argparse
 import os
+import random
 
 from pathlib import Path
 
@@ -13,6 +14,22 @@ def get_flipflop_files(all_files):
     only_non_worded_files = [file for file in only_500_digit_files if "worded" not in str(file)]
     return only_non_worded_files
 
+
+def get_flipflop_inductionhead_files(all_files):
+    only_500_digit_files = [file for file in all_files if "500_w" in file.name]
+    only_non_worded_files = [file for file in only_500_digit_files if "s3" in str(file)]
+    return only_non_worded_files
+
+
+def process_flipflip_inductionhead_data(data):
+    cnt = data.count("w")
+    if cnt == 1:
+        return data
+    curr_choice = random.choice(["r0", "r1", "i0", "i1"])
+    data = curr_choice + data[2:]
+    return data
+
+    
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--task", type=str, choices=['first', 'last', 'flipflop', 'flipflop_inductionhead'], 
@@ -36,8 +53,7 @@ if __name__ == "__main__":
         # TBD
         only_non_worded_files = []
     elif args.task == "flipflop_inductionhead":
-        # TBD
-        only_non_worded_files = []
+        only_non_worded_files = get_flipflop_inductionhead_files(all_files)
     else:
         raise ValueError("Invalid task")
     
@@ -46,12 +62,11 @@ if __name__ == "__main__":
     jsonl_data = []
     for file in tqdm(only_non_worded_files):
         with open(file, "r") as f:
-            data = [line.strip() for line in f.readlines()]
+            data = [line.strip() for line in f.readlines()] if args.task != "flipflop_inductionhead" else [process_flipflip_inductionhead_data(line.strip()) for line in f.readlines()]
             filenames = [str(file) for _ in range(len(data))]
             jsonl_data.extend([{"input": d, "filename": f} for d, f in zip(data, filenames)])
     
     print(f"Number of samples: {len(jsonl_data)} for task: {args.task} and length: {args.length}")
     with jsonlines.open(Path(args.output_dir) / "data.jsonl", "w") as writer:
         writer.write_all(jsonl_data)
-    
     

@@ -64,7 +64,7 @@ if __name__ == "__main__":
     cot = "nocot" if "nocot" in args.cot else "cot"
 
     registry = DirectoryPromptRegistry(Path(args.prompt_path), force_reindex=True)
-    task_prompt = registry.get(name=f"task_{cot}")
+    task_prompt = registry.get(name=f"task_{cot}_{args.last_char_type}")
     system_prompt = registry.get(name="sys")
 
     if not Path(args.save_path).exists():
