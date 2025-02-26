@@ -1,25 +1,32 @@
-from transformers import AutoTokenizer
 import json
 import os
 from collections import defaultdict
 
-path = '../results/last_ones/llama3.1_8B-instruct/qa_zero-shot_chat_last_v0/500_hard_all.jsonl'
-output = 'data/last_ones/llama3.1_8b-instruct/qa_last_ones.jsonl'
-tokenizer = AutoTokenizer.from_pretrained('meta-llama/Llama-3.1-8B-Instruct')
+base_folder = '../results/flipflop_inductionhead/llama3.3_70b-instruct/inductionhead_zero-shot_chat_v0'
+output = 'data/flipflop/llama3.3_70b-instruct/flipflop_ind_after.jsonl'
 
 data = []
-with open(path, 'r') as f:
-    for line in f:
-        data.append(json.loads(line))
+
+for file in os.listdir(base_folder):
+    if file.endswith(".jsonl") and 'after' in file:
+        print(file)
+        file_path = os.path.join(base_folder, file)
+
+        with open(file_path, "r") as f:
+            for line in f:
+                data.append(json.loads(line)) 
+        data = data[:-100]
+
+print(f"Total records loaded: {len(data)}")
+
        
 results = []
 for line in data:
-    full_answer = line['full_answer']
+    output_length = line['output_length']
     answer = line['answer']
     gold_ans = line['gold_ans_char']
     
-    tokenized_full_answer = tokenizer.tokenize(full_answer)
-    cot_ratio = round(len(tokenized_full_answer) / len(line['input']), 2)
+    cot_ratio = round(output_length / len(line['input']), 2)
     is_correct = str(answer) == str(gold_ans)
     
     stat = {
