@@ -22,6 +22,9 @@ def get_flipflop_inductionhead_files(all_files):
 
 
 def process_flipflip_inductionhead_data(data):
+    cnt = data.count("w")
+    if cnt == 1:
+        return data
     curr_choice = random.choice(["r0", "r1", "i0", "i1"])
     data = curr_choice + data[2:]
     return data
