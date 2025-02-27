@@ -88,4 +88,4 @@ if __name__ == "__main__":
     results = merge_data_with_responses(data, results)
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
     # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
-    save_to_jsonl(str(save_path), f"500_{args.config}_seed-{inference_params['seed']}.jsonl", results)
+    save_to_jsonl(str(save_path), f"bigger_{args.config}_seed-{inference_params['seed']}.jsonl", results)
