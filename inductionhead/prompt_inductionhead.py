@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     wait_for_engine_to_start(base_url)
 
-    if "llama" in args.save_path.lower():
+    if "llama" in args.save_path.lower() or "mamba" in args.save_path.lower():
         inference_params = LLAMA_INFERENCE_PARAMS
     elif "olmo" in args.save_path.lower():
         inference_params = OLMO_INFERENCE_PARAMS

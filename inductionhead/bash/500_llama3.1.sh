@@ -1,21 +1,21 @@
 PORT=8087
 
-#export CUDA_VISIBLE_DEVICES=0,1,2,3
-#
-#source /nethome/mayank/miniconda3/bin/activate
-#conda activate /scratch/mayank/envs/mech_interp
+export CUDA_VISIBLE_DEVICES=0,1,2,3
 
-#export PYTHONPATH=/scratch/mayank/Projects/len-gen
+source /nethome/mayank/miniconda3/bin/activate
+conda activate /scratch/mayank/envs/mech_interp
 
-#export VLLM_NO_USAGE_STATS=1
-#export DO_NOT_TRACK=1
-#mkdir -p ~/.config/vllm && touch ~/.config/vllm/do_not_track
+export PYTHONPATH=/scratch/mayank/Projects/len-gen
+
+export VLLM_NO_USAGE_STATS=1
+export DO_NOT_TRACK=1
+mkdir -p ~/.config/vllm && touch ~/.config/vllm/do_not_track
 
 
 # For llama3.1_8B-instruct
 
-#vllm serve meta-llama/Llama-3.1-8B-Instruct --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 32000 --max-num-batched-tokens 128000 &
-vllm serve meta-llama/Llama-3.1-8B-Instruct --tensor-parallel-size 2 --gpu-memory-utilization 0.85 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 32000 --max-num-batched-tokens 32000 &
+vllm serve meta-llama/Llama-3.1-8B-Instruct --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 32000 --max-num-batched-tokens 128000 &
+#vllm serve meta-llama/Llama-3.1-8B-Instruct --tensor-parallel-size 2 --gpu-memory-utilization 0.85 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 32000 --max-num-batched-tokens 32000 &
 
 VLLMPID=$!
 

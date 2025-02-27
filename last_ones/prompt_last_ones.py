@@ -50,21 +50,20 @@ if __name__ == "__main__":
     ap.add_argument("--cot", type=str, required=False, default="cot", help="cot or nocot")
     ap.add_argument("--save_path", type=str, nargs='?', default="results/last_ones/llama3.3_70B-instruct", help="Dir Path to save results in jsonlines")
     ap.add_argument("--port", type=str, required=False, default="8080", help="Port to use for the server")
-    ap.add_argument("--last_char_type", type=str, required=False, choices=["digit", "char"], default="digit", help="digit or char")
     args = ap.parse_args()
 
     # read jsonl file
     data, last_ones = [], []
     with jsonlines.open(args.ip_path, "r") as reader:
         for obj in reader:
-            obj["input"] = obj["input"].strip()[:-1] if args.last_char_type == "char" else obj["input"].strip()
+            obj["input"] = obj["input"].strip()
             data.append(obj)
             last_ones.append(obj["input"])
     
     cot = "nocot" if "nocot" in args.cot else "cot"
 
     registry = DirectoryPromptRegistry(Path(args.prompt_path), force_reindex=True)
-    task_prompt = registry.get(name=f"task_{cot}_{args.last_char_type}")
+    task_prompt = registry.get(name=f"task_{cot}")
     system_prompt = registry.get(name="sys")
 
     if not Path(args.save_path).exists():
@@ -74,7 +73,7 @@ if __name__ == "__main__":
 
     wait_for_engine_to_start(base_url)
 
-    if "llama" in args.save_path.lower():
+    if "llama" in args.save_path.lower() or "mamba" in args.save_path.lower():
         inference_params = LLAMA_INFERENCE_PARAMS
     elif "olmo" in args.save_path.lower():
         inference_params = OLMO_INFERENCE_PARAMS
@@ -86,4 +85,4 @@ if __name__ == "__main__":
     results = merge_data_with_responses(data, results, task="s_last" if "_s_last" in args.prompt_path else "last")
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
     # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
-    save_to_jsonl(str(save_path), f"500_{args.last_char_type}_{cot}_seed-{inference_params['seed']}.jsonl", results)
+    save_to_jsonl(str(save_path), f"500_{cot}_seed-{inference_params['seed']}.jsonl", results)
