@@ -1,0 +1,1 @@
+{"files":[{"text":"Print the first character from the \"Input\" sequence below.\n\n-------------------------------\nInput sequence: <s>{{ input }}</s>\n-------------------------------\n\nThe first character of the Input sequence is ","name":"task","version":"0","metadata":{}}]}
