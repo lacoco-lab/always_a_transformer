@@ -1,0 +1,104 @@
+import os
+import torch
+import random
+import numpy as np
+from torch.utils.data import Dataset
+
+
+def compute_metrics(eval_pred):
+    """
+    Computes accuracy based on the predicted token at the valid (non-padded)
+    position in each sample.
+    """
+    logits, labels = eval_pred
+    pred_labels = []
+    true_labels = []
+    for logit, label in zip(logits, labels):
+        valid_indices = np.where(label != -100)[0]
+        if len(valid_indices) == 0:
+            continue
+        valid_index = valid_indices[-1]  # use the last valid token position.
+        pred_token = np.argmax(logit[valid_index])
+        true_token = label[valid_index]
+        pred_labels.append(pred_token)
+        true_labels.append(true_token)
+    accuracy = np.mean(np.array(pred_labels) == np.array(true_labels))
+    return {"accuracy": accuracy}
+
+
+# Minimal dataset that returns (x, y) pairs.
+class DiffXYDataset(Dataset):
+    def __init__(self, x_data, y_data):
+        self.x_data = x_data
+        self.y_data = y_data
+    def __len__(self):
+        return len(self.x_data)
+    def __getitem__(self, idx):
+        return self.x_data[idx], self.y_data[idx]
+
+
+# Generate a dataset based on simple functions.
+def get_dataset(lang_params):
+    sampling_type = lang_params['name']        # 'first', 'last', 'induction_left', or 'induction_right'
+    min_len = lang_params['min_len']
+    max_len = lang_params['max_len']
+    total_samples = lang_params['total_samples']
+    x_data, y_data = [], []
+    
+    if sampling_type in ['first', 'last']:
+        for _ in range(total_samples):
+            seq_len = torch.randint(min_len, max_len, (1,)).item()
+            x = torch.randint(0, 5, (seq_len,))
+            x_data.append(x)
+            y = torch.tensor([x[0]]) if sampling_type == 'first' else torch.tensor([x[-1]])
+            y_data.append(y)
+    elif sampling_type in ['induction_left', 'induction_right']:
+        for _ in range(total_samples):
+            L = torch.randint(min_len, max_len, (1,)).item()
+            while L < 4:
+                L = torch.randint(min_len, max_len, (1,)).item()
+            target = torch.randint(0, 5, (1,)).item()
+            possible_tokens = list(range(5))
+            possible_tokens.remove(target)
+            body_length = L - 1
+            body = [random.choice(possible_tokens) for _ in range(body_length)]
+            insertion_index = random.randint(1, body_length - 1)
+            body.insert(insertion_index, target)
+            full_seq = torch.tensor(body + [target])
+            label = full_seq[insertion_index - 1] if sampling_type == 'induction_left' else full_seq[insertion_index + 1]
+            x_data.append(full_seq)
+            y_data.append(torch.tensor([label]))
+    
+    return DiffXYDataset(x_data, y_data)
+
+
+# Data collator: pads inputs and sets labels only on the final token.
+def data_collator(batch):
+    pad_token_id = 5  # Our dataset tokens are 0-4, so we use 5 as the pad token.
+    max_len = max(x.shape[0] for x, _ in batch)
+    input_ids, labels = [], []
+    for x, y in batch:
+        seq_len = x.shape[0]
+        padded_x = torch.cat([x, torch.full((max_len - seq_len,), pad_token_id, dtype=torch.long)])
+        input_ids.append(padded_x)
+        label_seq = torch.full((max_len,), -100, dtype=torch.long)
+        label_seq[seq_len - 1] = y.item()
+        labels.append(label_seq)
+    return {"input_ids": torch.stack(input_ids), "labels": torch.stack(labels)}
+
+
+def get_or_create_dataset(lang_params, dataset_type: str):
+    """
+    Checks if a cached dataset file exists for the given dataset_type ("train" or "val").
+    If so, loads it; otherwise, generates the dataset and saves it locally.
+    """
+    cache_path = f"./cached_{dataset_type}_dataset.pt"
+    if os.path.exists(cache_path):
+        dataset = torch.load(cache_path)
+        print(f"Loaded {dataset_type} dataset from {cache_path}")
+        return dataset
+    else:
+        dataset = get_dataset(lang_params)
+        torch.save(dataset, cache_path)
+        print(f"Saved {dataset_type} dataset to {cache_path}")
+        return dataset
