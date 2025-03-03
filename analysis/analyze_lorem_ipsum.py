@@ -23,6 +23,21 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TASK = 'loremipsum'
 RESULTS = 'results'
 
+
+def clean_tokens(tokens):
+    """
+    Clean up trailing spaces and 'Ġ'
+    :param tokens: arr, tokenized input/output
+    :return: arr, cleaned input/output
+    """
+    
+    cleaned = []
+    for tok in tokens:
+        tok = tok.strip().replace('Ġ', '')
+        cleaned.append(tok)
+    return cleaned
+
+
 def get_data(path):
     """
     Read jsonl file with the results.
@@ -43,12 +58,37 @@ def get_accuracy_first(inputs, outputs):
     :param outputs: arr of tokenized outputs
     :return: float, accuracy of the first token copy
     """
-    
+    incorrect_firsts = []
     correct = 0
-    for ans, gold_ans in zip(inputs, outputs):
+    for gold_ans, ans in zip(inputs, outputs):
         if ans[0] == gold_ans[0]:
             correct += 1
+        else:
+            if ans[0] == '': # olmo tokenization issue
+                if ans[1] == gold_ans[0]:
+                    correct += 1 
+                    continue
+            incorrect_firsts.append({'input': gold_ans, 'output': ans, 'token': gold_ans[0]})
     
+    return correct / len(inputs), incorrect_firsts
+
+
+def get_accuracy_last_str(inputs, outputs):
+    """
+    OLMo has a lot of tokenization issue. This is a sanity check to check whether the last token in the
+    response string matches (separated by a space, not processed by a tokenizer)
+    
+    :param inputs: arr[str], gold answer
+    :param outputs: arr[str], answer
+    :return: float, accuracy of the last token copy
+    """
+    
+    correct = 0
+    for gold_ans, ans in zip(inputs, outputs):
+        split_ans = ans.split()
+        split_gold_ans = gold_ans.split()
+        if split_ans[len(split_ans)-1].strip('.') == split_gold_ans[len(split_gold_ans)-1].strip('.'):
+            correct += 1
     return correct / len(inputs)
 
 
@@ -60,13 +100,15 @@ def get_accuracy_last(inputs, outputs):
     :param outputs: arr of tokenized outputs
     :return: float, accuracy of the last token copy
     """
-
+    incorrect_lasts = []
     correct = 0
     for ans, gold_ans in zip(inputs, outputs):
         if ans[len(ans)-1] == gold_ans[len(gold_ans)-1]:
             correct += 1
+        else:
+            incorrect_lasts.append({'input': gold_ans, 'output': ans, 'token': gold_ans[len(gold_ans)-1]})
 
-    return correct / len(inputs)
+    return correct / len(inputs), incorrect_lasts
 
 
 def get_accuracy_ind(inputs, outputs):
@@ -82,8 +124,10 @@ def get_accuracy_ind(inputs, outputs):
     total_unique = 0
     
     absent_copies = []
+    faulty_copies = []
     
     for gold_ans, ans in zip(inputs, outputs):
+        
         counts = {}
         for tok in gold_ans:
             counts[tok] = counts.get(tok, 0) + 1
@@ -96,11 +140,17 @@ def get_accuracy_ind(inputs, outputs):
                 try:
                     if ans.index(token) == gold_ans.index(token):
                         correct += 1
+                    else:
+                        #print(f'Token {token} was misplaced from {gold_ans.index(token)} pos to {ans.index(token)} pos.')
+                        faulty_copies.append({'input': gold_ans, 'output': ans, 'token': token, 'pos': gold_ans.index(token),
+                                              'mis_pos': ans.index(token)})
+                        break
                 except ValueError: # Token has not been copied at all
                     absent_copies.append({'input': gold_ans, 'output': ans, 'token': token})
-                    print(f'No token {token} has been copied correctly.')
+                    #print(f'Token {token} has not been copied correctly.')
                     
-    return correct / total_unique, absent_copies
+    return correct / total_unique, absent_copies, faulty_copies, total_unique
+
 
 parser = ArgumentParser()
 parser.add_argument("-m", "--model", dest="model",
@@ -134,20 +184,90 @@ else:
 
 path = os.path.join(ROOT, RESULTS,  TASK, model, args.prompt_type, seed_path)
 data = get_data(path)
+OUTPUT_FILE = f"output_{model}_{args.prompt_type}_{args.seed}.txt"
+
+# select correct slices
+if args.model == 'olmo':
+    start_inp, end_inp = 28, 41
+    start_out, end_out = 3, 8
+    if args.seed == 'VERBATIM':
+        start_inp, end_inp = 34, 41
+        start_out, end_out = 3, 8
+elif 'llama' in args.model:
+    start_inp, end_inp = 72, 37
+    start_out, end_out = 3, 6
+    if args.seed == 'VERBATIM':
+        start_inp, end_inp = 78, 37
+        start_out, end_out = 3, 6
+        
+new_data = []
+# Fix the issue of multiple repetitions in verbatim seed 
+if model == 'llama3.1_8B-instruct' and args.seed == 'VERBATIM':
+    for line in data:
+        if len(line['answer'].split('\n')) > 1:
+            line['answer'] = line['answer'].split('\n')[1]
+        new_data.append(line)
+        
+if new_data != []:
+    data = new_data
 
 inputs, outputs = [], []
+str_inputs, str_outputs = [], []
+incorrect_outputs = []
 for line in data:
-    inputs.append(line['input'])
-    outputs.append(line['answer'])
+    cleaned_inputs = clean_tokens(line['tokenized_input'][start_inp:len(line['tokenized_input'])-end_inp])
+    cleaned_outputs = clean_tokens(line['tokenized_output'][start_out:len(line['tokenized_output'])-end_out])
+    str_inputs.append(line['gold_ans'])
+    str_outputs.append(line['answer'])
+    
+    if line['is_correct'] == False:
+        incorrect_outputs.append({'tokenized_input': cleaned_inputs, 'tokenized_output': cleaned_outputs})
+    
+    inputs.append(cleaned_inputs)
+    outputs.append(cleaned_outputs)
 
-accuracy_first = get_accuracy_first(inputs, outputs)
-accuracy_last = get_accuracy_last(inputs, outputs)
-accuracy_ind, absent_copies = get_accuracy_ind(inputs, outputs)
+accuracy_first, incorrect_firsts = get_accuracy_first(inputs, outputs)
+accuracy_last, incorrect_lasts = get_accuracy_last(inputs, outputs)
+accuracy_ind, absent_copies, faulty_copies, total_unique = get_accuracy_ind(inputs, outputs)
+accuracy_last_str = get_accuracy_last_str(str_inputs, str_outputs)
 
-print(f'First accuracy: {accuracy_first*100}%\n')
-print(f'Last accuracy: {accuracy_last*100}%\n')
-print(f'Induction accuracy: {accuracy_ind*100}%\n')
-if len(absent_copies) > 0:
-    print(f'Absent copies: {len(absent_copies)}')
-    for inp in absent_copies:
-        print(str(inp['token']) + "\n" + str(inp['input']) + "\n" + str(inp['output']) + "\n" + "=====================")
+with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    print(f'First accuracy: {accuracy_first*100}%\n')
+    print(f'Last accuracy: {accuracy_last*100}%\n')
+    print(f'Last accuracy (string manner): {accuracy_last_str*100}%\n')
+    print(f'Induction accuracy: {accuracy_ind*100}% for total of {total_unique} tokens.\n')
+    
+    f.write(f'First accuracy: {accuracy_first*100}%\n')
+    if len(incorrect_firsts) > 0:
+        f.write(f'Incorrect first copies: {len(incorrect_firsts)}\n')
+        for inp in incorrect_firsts:
+            f.write(str(inp['token']) + "\n" + str(inp['input']) + "\n" + str(
+                inp['output']) + "\n" + "=====================\n")
+
+    f.write(f'Last accuracy: {accuracy_last*100}%\n')
+    if len(incorrect_lasts) > 0:
+        f.write(f'Incorrect last copies: {len(incorrect_lasts)}\n')
+        for inp in incorrect_lasts:
+            f.write(str(inp['token']) + "\n" + str(inp['input']) + "\n" + str(
+                inp['output']) + "\n" + "=====================\n")
+    f.write(f'Induction accuracy: {accuracy_ind*100}% for total of {total_unique} tokens.\n')
+
+    if len(absent_copies) > 0:
+        f.write(f'Absent copies: {len(absent_copies)}\n')
+        for inp in absent_copies:
+            f.write(str(inp['token']) + "\n" + str(inp['input']) + "\n" + str(
+                inp['output']) + "\n" + "=====================\n")
+
+    if len(faulty_copies) > 0:
+        f.write(f'Faulty copies: {len(faulty_copies)}\n')
+        for inp in faulty_copies:
+            f.write(str(inp['token']) + " from pos " + str(inp['pos']) + " to " + str(inp['mis_pos']) + "\n" + str(
+                inp['input']) + "\n" + str(inp['output']) + "\n" + "=====================\n")
+
+            
+    if len(incorrect_outputs) > 0:
+        f.write(f'Incorrect outputs: {len(incorrect_outputs)} (may overlap with other mistakes)\n')
+        for inp in incorrect_outputs:
+            f.write(str(inp['tokenized_input']) + "\n" + str(inp['tokenized_output'])+ "\n" + "=====================\n")
+
+print(f"Output written to {OUTPUT_FILE}")

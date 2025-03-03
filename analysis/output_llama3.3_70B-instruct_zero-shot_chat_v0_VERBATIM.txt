@@ -1,0 +1,3 @@
+First accuracy: 100.0%
+Last accuracy: 100.0%
+Induction accuracy: 100.0% for total of 22614 tokens.
