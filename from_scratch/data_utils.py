@@ -76,15 +76,25 @@ def get_dataset(lang_params):
 def data_collator(batch):
     pad_token_id = 5  # Our dataset tokens are 0-4, so we use 5 as the pad token.
     max_len = max(x.shape[0] for x, _ in batch)
-    input_ids, labels = [], []
+    input_ids, labels, attention_mask = [], [], []
     for x, y in batch:
         seq_len = x.shape[0]
         padded_x = torch.cat([x, torch.full((max_len - seq_len,), pad_token_id, dtype=torch.long)])
         input_ids.append(padded_x)
+
+        attn_mask = torch.cat([torch.ones(seq_len, dtype=torch.long),
+                               torch.zeros(max_len - seq_len, dtype=torch.long)])
+        attention_mask.append(attn_mask)
+
         label_seq = torch.full((max_len,), -100, dtype=torch.long)
         label_seq[seq_len - 1] = y.item()
         labels.append(label_seq)
-    return {"input_ids": torch.stack(input_ids), "labels": torch.stack(labels)}
+
+    return {    
+        "input_ids": torch.stack(input_ids),
+        "labels": torch.stack(labels),
+        "attention_mask": torch.stack(attention_mask)
+    }
 
 
 def get_or_create_dataset(lang_params, dataset_type: str):
@@ -92,9 +102,14 @@ def get_or_create_dataset(lang_params, dataset_type: str):
     Checks if a cached dataset file exists for the given dataset_type ("train" or "val").
     If so, loads it; otherwise, generates the dataset and saves it locally.
     """
-    cache_path = f"./cached_{dataset_type}_dataset.pt"
+    cache_path = (
+        f"datasets/cached_{dataset_type}_{lang_params['name']}_"
+        f"min{lang_params['min_len']}_max{lang_params['max_len']}_"
+        f"samples{lang_params['total_samples']}.pt"
+    )
     if os.path.exists(cache_path):
-        dataset = torch.load(cache_path)
+        torch.serialization.add_safe_globals([DiffXYDataset])
+        dataset = torch.load(cache_path, weights_only=True)
         print(f"Loaded {dataset_type} dataset from {cache_path}")
         return dataset
     else:
