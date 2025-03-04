@@ -5,9 +5,15 @@ from wandb_settings import settings
 from omegaconf import DictConfig, OmegaConf
 from data_utils import get_or_create_dataset, data_collator, compute_metrics
 
+import math
+import torch
+import torch.nn as nn
 from transformers import GPT2LMHeadModel, GPT2Config, Trainer, TrainingArguments, TrainerCallback
+from transformers.models.gpt2.modeling_gpt2 import GPT2Attention, GPT2Block, GPT2Model
 
-
+#############################################
+# Custom Early Stopping Callback (unchanged)
+#############################################
 class CustomEarlyStoppingCallback(TrainerCallback):
     """
     Custom early stopping callback that stops training if the eval_accuracy reaches
@@ -20,7 +26,6 @@ class CustomEarlyStoppingCallback(TrainerCallback):
         self.counter = 0
 
     def on_evaluate(self, args, state, control, metrics, **kwargs):
-        # Check if the metric is available.
         if self.metric_name in metrics:
             value = metrics[self.metric_name]
             if value >= self.target_value:
@@ -31,9 +36,66 @@ class CustomEarlyStoppingCallback(TrainerCallback):
                     control.should_early_stop = True
                     control.should_training_stop = True
             else:
-                # Reset counter if the metric doesn't reach target.
                 self.counter = 0
         return control
+
+
+#############################################
+# Using Rotary Positional Embeddings (RoPE)
+#############################################
+class RotaryEmbedding(nn.Module):
+    def __init__(self, dim, max_position_embeddings=2048):
+        super().__init__()
+        inv_freq = 1.0 / (10000 ** (torch.arange(0, dim, 2).float() / dim))
+        self.register_buffer("inv_freq", inv_freq)
+        self.max_position_embeddings = max_position_embeddings
+
+    def forward(self, seq_len):
+        positions = torch.arange(seq_len, device=self.inv_freq.device).float()
+        freqs = torch.einsum("i,j->ij", positions, self.inv_freq)
+        sin = freqs.sin().unsqueeze(0).unsqueeze(0)
+        cos = freqs.cos().unsqueeze(0).unsqueeze(0)
+        # Duplicate along the last dimension (assumes even head_dim)
+        sin = torch.cat([sin, sin], dim=-1)
+        cos = torch.cat([cos, cos], dim=-1)
+        return sin, cos
+
+def rotate_half(x):
+    x1, x2 = x.chunk(2, dim=-1)
+    return torch.cat((-x2, x1), dim=-1)
+
+def apply_rotary_pos_emb(q, k, sin, cos):
+    q_rot = (q * cos) + (rotate_half(q) * sin)
+    k_rot = (k * cos) + (rotate_half(k) * sin)
+    return q_rot, k_rot
+
+class GPT2AttentionRoPE(GPT2Attention):
+    def __init__(self, config, is_cross_attention=False):
+        super().__init__(config, is_cross_attention)
+        self.rotary_emb = RotaryEmbedding(self.head_dim)
+
+    def _attn(self, query, key, value, attention_mask=None, head_mask=None):
+        seq_len = query.size(-2)
+        sin, cos = self.rotary_emb(seq_len)
+        query, key = apply_rotary_pos_emb(query, key, sin, cos)
+        return super()._attn(query, key, value, attention_mask, head_mask)
+
+class GPT2BlockRoPE(GPT2Block):
+    def __init__(self, config):
+        super().__init__(config)
+        self.attn = GPT2AttentionRoPE(config)
+
+class GPT2ModelRoPE(GPT2Model):
+    def __init__(self, config):
+        super().__init__(config)
+        # Replace all blocks with RoPE-enabled blocks.
+        self.h = nn.ModuleList([GPT2BlockRoPE(config) for _ in range(config.n_layer)])
+
+class GPT2LMHeadModelRoPE(GPT2LMHeadModel):
+    def __init__(self, config):
+        super().__init__(config)
+        self.transformer = GPT2ModelRoPE(config)
+        self.init_weights()
 
 # --------------------------
 # Main with Hydra and Wandb Integration
@@ -52,7 +114,7 @@ def main(cfg: DictConfig):
 
     # Create the model.
     model_config = GPT2Config(
-        vocab_size=cfg.model.vocab_size,
+        vocab_size=cfg.model.vocab_size + 1,
         n_positions=cfg.model.n_positions,
         n_ctx=cfg.model.n_ctx,
         n_embd=cfg.model.n_embd,
@@ -60,13 +122,11 @@ def main(cfg: DictConfig):
         n_head=cfg.model.n_head,
         pad_token_id=cfg.model.pad_token_id,
     )
-    model = GPT2LMHeadModel(model_config)
-    # print("model done")
+    model = GPT2LMHeadModelRoPE(model_config)
     # Create training and validation datasets.
     train_dataset = get_or_create_dataset(cfg.dataset.train, "train")
     val_dataset = get_or_create_dataset(cfg.dataset.val, "val")
 
-    
     # Set up training arguments with Wandb reporting.
     training_args = TrainingArguments(
         output_dir=cfg.train.output_dir,

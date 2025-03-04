@@ -9,7 +9,7 @@ model:
   n_positions: 512
   n_ctx: 512
   n_embd: 64
-  n_layer: 4
+  n_layer: 2
   n_head: 4
   pad_token_id: 5
 

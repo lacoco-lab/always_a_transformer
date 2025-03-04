@@ -7,23 +7,24 @@ from torch.utils.data import Dataset
 
 def compute_metrics(eval_pred):
     """
-    Computes accuracy based on the predicted token at the valid (non-padded)
-    position in each sample.
+    Computes accuracy based on the predicted token for the target.
+    Since we append a dummy token and the model is causal, the prediction 
+    for the target (located at index valid_index) comes from logits at valid_index - 1.
     """
     logits, labels = eval_pred
     pred_labels = []
     true_labels = []
     for logit, label in zip(logits, labels):
         valid_indices = np.where(label != -100)[0]
-        if len(valid_indices) == 0:
-            continue
-        valid_index = valid_indices[-1]  # use the last valid token position.
-        pred_token = np.argmax(logit[valid_index])
+        valid_index = valid_indices[-1]  # target label is at this position.
+        # Shift one back because of causal prediction
+        pred_token = np.argmax(logit[valid_index - 1])
         true_token = label[valid_index]
         pred_labels.append(pred_token)
         true_labels.append(true_token)
     accuracy = np.mean(np.array(pred_labels) == np.array(true_labels))
     return {"accuracy": accuracy}
+
 
 
 # Minimal dataset that returns (x, y) pairs.
@@ -52,6 +53,7 @@ def get_dataset(lang_params):
             x_data.append(x)
             y = torch.tensor([x[0]]) if sampling_type == 'first' else torch.tensor([x[-1]])
             y_data.append(y)
+
     elif sampling_type in ['induction_left', 'induction_right']:
         for _ in range(total_samples):
             L = torch.randint(min_len, max_len, (1,)).item()
@@ -72,24 +74,35 @@ def get_dataset(lang_params):
     return DiffXYDataset(x_data, y_data)
 
 
-# Data collator: pads inputs and sets labels only on the final token.
 def data_collator(batch):
-    pad_token_id = 5  # Our dataset tokens are 0-4, so we use 5 as the pad token.
-    max_len = max(x.shape[0] for x, _ in batch)
+    pad_token_id = 5  # pad token remains 5.
+    dummy_token_id = 6  # NEW dedicated token for the answer slot.
+    # Each example now will have an extra token (dummy_token) appended for the answer.
+    max_x_len = max(x.shape[0] for x, _ in batch)
+    max_len = max_x_len + 1  # extra token for the answer slot
+
     input_ids, labels, attention_mask = [], [], []
     for x, y in batch:
-        seq_len = x.shape[0]
-        padded_x = torch.cat([x, torch.full((max_len - seq_len,), pad_token_id, dtype=torch.long)])
+        orig_len = x.shape[0]
+        # Append the dummy token at the end of the input.
+        # new_x = torch.cat([x, torch.tensor([dummy_token_id], dtype=torch.long)])
+        # Pad the extended sequence to the maximum length.
+        padding = torch.full((max_len - orig_len,), pad_token_id, dtype=torch.long)
+        padded_x = torch.cat([x, padding])
         input_ids.append(padded_x)
-
-        attn_mask = torch.cat([torch.ones(seq_len, dtype=torch.long),
-                               torch.zeros(max_len - seq_len, dtype=torch.long)])
+        
+        # Create an attention mask for the actual tokens (including the answer slot).
+        attn_mask = torch.cat([torch.ones(orig_len, dtype=torch.long),
+                                 torch.zeros(max_len - orig_len, dtype=torch.long)])
         attention_mask.append(attn_mask)
-
+        
+        # Create labels: set -100 everywhere except at the answer slot.
         label_seq = torch.full((max_len,), -100, dtype=torch.long)
-        label_seq[seq_len - 1] = y.item()
+        # The answer should be predicted at the appended dummy position (index = orig_len)
+        label_seq[orig_len] = y.item()
+        # print("X", padded_x, "attn_mask", attn_mask, "label_seq", label_seq)
         labels.append(label_seq)
-
+    
     return {    
         "input_ids": torch.stack(input_ids),
         "labels": torch.stack(labels),
