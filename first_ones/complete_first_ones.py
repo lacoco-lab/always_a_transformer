@@ -78,7 +78,7 @@ if __name__ == "__main__":
         raise ValueError("Unknown model")
 
     client = openai.AsyncClient(base_url=base_url, api_key="sk_noreq", max_retries=10)
-    results = batch_complete(first_ones, client, task_prompt, inference_params=inference_params, batch_size=64)
+    results = batch_complete(first_ones, client, task_prompt, inference_params=inference_params, batch_size=32)
     results = merge_data_with_responses(data, results)
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
     # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)

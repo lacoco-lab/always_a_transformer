@@ -35,7 +35,6 @@ def merge_data_with_responses(data, responses):
     for r_idx, resp in enumerate(responses):
         d = data[r_idx]
         d["answer"] = parse_paragraph_response(resp.choices[0].message.content)
-        d["gold_ans"] = d['input']
         if d["answer"] and d["gold_ans"]:
             d["is_correct"] = d["answer"].strip() == d["gold_ans"].strip()
         d["full_answer"] = resp.choices[0].message.content
@@ -43,6 +42,10 @@ def merge_data_with_responses(data, responses):
         d["output_length"] = resp.usage.completion_tokens
         d["tokenized_output"] = [lp.token for lp in resp.choices[0].logprobs.content]
     return data
+
+
+def reverse_string_by_word(s):
+    return " ".join(s.split()[::-1])
 
 
 if __name__ == "__main__":
@@ -61,6 +64,7 @@ if __name__ == "__main__":
     with jsonlines.open(args.ip_path, "r") as reader:
         for obj in reader:
             obj["input"] = obj["input"].strip()
+            obj["gold_ans"] = reverse_string_by_word(obj["input"]) if "reverse" in args.config else obj["output"]
             data.append(obj)
             loremipsum.append(obj["input"])
 
