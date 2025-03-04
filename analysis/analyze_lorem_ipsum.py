@@ -152,6 +152,69 @@ def get_accuracy_ind(inputs, outputs):
     return correct / total_unique, absent_copies, faulty_copies, total_unique
 
 
+def get_accuracy_repeats(inputs, outputs):
+    """
+    Calculate how accurately consecutive repeated tokens are copied
+    from the input to the output in the same positions.
+
+    :param inputs: list of lists (tokenized inputs)
+    :param outputs: list of lists (tokenized outputs)
+    :return: float  -> accuracy of repeated-token copy
+             list   -> absent copies (repeated pairs missing entirely in output)
+             list   -> faulty copies (repeated pairs present but in the wrong position)
+             int    -> total number of repeated pairs found in inputs
+    """
+
+    correct = 0
+    total_repeated = 0
+
+    absent_copies = []
+    faulty_copies = []
+
+    for gold_ans, ans in zip(inputs, outputs):
+
+        for i in range(len(gold_ans) - 1):
+            if gold_ans[i] == gold_ans[i + 1]:
+                repeated_token = gold_ans[i]
+                total_repeated += 1
+
+                if i < len(ans) - 1:
+                    if ans[i] == repeated_token and ans[i + 1] == repeated_token:
+                        correct += 1
+                    else:
+                        found_pair_elsewhere = False
+                        for j in range(len(ans) - 1):
+                            if ans[j] == repeated_token and ans[j + 1] == repeated_token:
+                                # Found it in a different position
+                                faulty_copies.append({
+                                    'input': gold_ans,
+                                    'output': ans,
+                                    'token': repeated_token,
+                                    'pos': i,
+                                    'mis_pos': j
+                                })
+                                found_pair_elsewhere = True
+                                break
+                        if not found_pair_elsewhere:
+                            absent_copies.append({
+                                'input': gold_ans,
+                                'output': ans,
+                                'token': repeated_token,
+                                'pos': i
+                            })
+                else:
+                    absent_copies.append({
+                        'input': gold_ans,
+                        'output': ans,
+                        'token': repeated_token,
+                        'pos': i
+                    })
+
+    accuracy = correct / total_repeated if total_repeated else 0.0
+
+    return accuracy, absent_copies, faulty_copies, total_repeated
+
+
 parser = ArgumentParser()
 parser.add_argument("-m", "--model", dest="model",
                         help="choose model to parse results from")
@@ -230,12 +293,14 @@ accuracy_first, incorrect_firsts = get_accuracy_first(inputs, outputs)
 accuracy_last, incorrect_lasts = get_accuracy_last(inputs, outputs)
 accuracy_ind, absent_copies, faulty_copies, total_unique = get_accuracy_ind(inputs, outputs)
 accuracy_last_str = get_accuracy_last_str(str_inputs, str_outputs)
+accuracy_repeated, absent_repeated, faulty_repeated, total_repeated =  get_accuracy_repeats(inputs, outputs)
 
 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
     print(f'First accuracy: {accuracy_first*100}%\n')
     print(f'Last accuracy: {accuracy_last*100}%\n')
     print(f'Last accuracy (string manner): {accuracy_last_str*100}%\n')
     print(f'Induction accuracy: {accuracy_ind*100}% for total of {total_unique} tokens.\n')
+    print(f'Repeating tokens accuracy: {accuracy_repeated*100}%\n')
     
     f.write(f'First accuracy: {accuracy_first*100}%\n')
     if len(incorrect_firsts) > 0:
@@ -251,6 +316,7 @@ with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             f.write(str(inp['token']) + "\n" + str(inp['input']) + "\n" + str(
                 inp['output']) + "\n" + "=====================\n")
     f.write(f'Induction accuracy: {accuracy_ind*100}% for total of {total_unique} tokens.\n')
+    
 
     if len(absent_copies) > 0:
         f.write(f'Absent copies: {len(absent_copies)}\n')
@@ -264,6 +330,19 @@ with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             f.write(str(inp['token']) + " from pos " + str(inp['pos']) + " to " + str(inp['mis_pos']) + "\n" + str(
                 inp['input']) + "\n" + str(inp['output']) + "\n" + "=====================\n")
 
+    f.write(f'Repeated tokens accuracy: {accuracy_repeated * 100}%\n')
+
+    if len(absent_repeated) > 0:
+        f.write(f'Absent repeated copies: {len(absent_repeated)}\n')
+        for inp in absent_repeated:
+            f.write(str(inp['token']) + "\n" + str(inp['input']) + "\n" + str(
+                inp['output']) + "\n" + "=====================\n")
+
+    if len(faulty_repeated) > 0:
+        f.write(f'Faulty copies: {len(faulty_repeated)}\n')
+        for inp in faulty_repeated:
+            f.write(str(inp['token']) + " from pos " + str(inp['pos']) + " to " + str(inp['mis_pos']) + "\n" + str(
+                inp['input']) + "\n" + str(inp['output']) + "\n" + "=====================\n")
             
     if len(incorrect_outputs) > 0:
         f.write(f'Incorrect outputs: {len(incorrect_outputs)} (may overlap with other mistakes)\n')
