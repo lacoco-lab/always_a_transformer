@@ -35,7 +35,7 @@ def merge_data_with_responses(data, responses):
     for r_idx, resp in enumerate(responses):
         d = data[r_idx]
         d["answer"] = resp.choices[0].text
-        d["is_correct"] = d["gold_ans_char"] == d["answer"][0]
+        d["gold_ans"] = d["gold_ans_char"] == d["answer"][0]
         d["input_length"] = resp.usage.prompt_tokens
         d["output_length"] = resp.usage.completion_tokens
         d["tokenized_output"] = resp.choices[0].logprobs.tokens

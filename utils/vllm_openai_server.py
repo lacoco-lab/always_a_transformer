@@ -90,7 +90,7 @@ async def openai_vllm_complete(client, task_prompt, inference_params, xid="task"
     return response
 
 
-async def openai_single_complete(data, client, task_prompt, spaced_input=False, xid="task-{}", inference_params=COMPLETION_INFERENCE_PARAMS):
+async def openai_single_complete(data, client, task_prompt, xid="task-{}", inference_params=COMPLETION_INFERENCE_PARAMS):
     q_tasks = []
     async for d_idx, d in _prepare_prompts(data, task_prompt):
         q_task = asyncio.create_task(openai_vllm_complete(client, d, inference_params, xid=xid.format(d_idx)))
