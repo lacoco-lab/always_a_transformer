@@ -93,21 +93,20 @@ def add_new_variation(tokenizer, to_add_variation, max_tokens=2000):
     }    
 
 
-def generate_lorem_ipsum_variations(file_name, total_samples=1500, max_tokens=2000):
+def generate_lorem_ipsum_variations(file_name, num_sentences=200, lorem_generate=5, total_samples=1500, max_tokens=2000):
     variations = []
     generated_lp, added_text = 0, []
 
     while generated_lp < total_samples:
         # Generate a basic lorem ipsum text
-        variation = lorem.text() + lorem.text() + lorem.text()
+        variation = ''
+        for _ in range(lorem_generate):
+            variation += lorem.text()
         # Split the sentences in the lorem-ipsum variation.
         variation = variation.replace('\n', ' ')
         sentences = variation.split('. ')
-        if len(sentences) > 90:
-            # Restrict number of sentences, as we want repetition to occur
-            sentences = sentences[:90]
         
-        while len(sentences) < 110:
+        while len(sentences) < num_sentences:
             # Shuffle the order of the sentences
             random.shuffle(sentences)
 
@@ -131,6 +130,10 @@ def generate_lorem_ipsum_variations(file_name, total_samples=1500, max_tokens=20
              # Add duplicate sentences randomly
             if random.random() < 0.3:  # 30% chance to duplicate a sentence
                 sentence_to_repeat = random.choice(sentences)
+                # Repeat the sentence 4 times for amplifying the error
+                sentences.append(sentence_to_repeat)
+                sentences.append(sentence_to_repeat)
+                sentences.append(sentence_to_repeat)
                 sentences.append(sentence_to_repeat)
             
             # Duplicate words in random sentences
@@ -138,6 +141,10 @@ def generate_lorem_ipsum_variations(file_name, total_samples=1500, max_tokens=20
                 sentence_index = random.choice(range(len(sentences)))
                 words = sentences[sentence_index].split()
                 word_to_duplicate = random.choice(words)
+                # Add the word 4 times to the sentence for amplifying the error
+                words.append(word_to_duplicate)
+                words.append(word_to_duplicate)
+                words.append(word_to_duplicate)
                 words.append(word_to_duplicate)
                 sentences[sentence_index] = ' '.join(words)
 
@@ -148,6 +155,7 @@ def generate_lorem_ipsum_variations(file_name, total_samples=1500, max_tokens=20
             continue
             
         generated_lp += 1
+        # print(generated_lp)
         added_text.append(to_add_variation)
         data_point = add_new_variation(tokenizer, to_add_variation, max_tokens)
         variations.append(data_point)
@@ -163,10 +171,17 @@ def generate_lorem_ipsum_variations(file_name, total_samples=1500, max_tokens=20
 
 def main():
     # Specify the file to save the variations
-    output_file = "datasets/500/loremipsum/data_bigger.jsonl"
+    output_file = "datasets/500/loremipsum/data_4000_tokens.jsonl"
+    # output_file = "datasets/500/loremipsum/data_5000_tokens.jsonl"
+    # For 3000 tokens, lorem_generate = 5, num_sentences = 200, total_samples = 1500
+    # For 1500 tokens, lorem_generate = 3, num_sentences = 110, total_samples = 1500
+    # For 4000 tokens, lorem_generate = 7, num_sentences = 300, total_samples = 1500
+    # For 5000 tokens, lorem_generate = 15, num_sentences = 400, total_samples = 1500
+    lorem_generate = 10  # Number of lorem ipsum paragraphs to generate
+    num_sentences = 380  # Number of sentences in each variation
     total_samples = 1500  # Number of variations to generate
-    max_tokens = 2000  # Maximum number of tokens in each variation
-    variations = generate_lorem_ipsum_variations(output_file, total_samples, max_tokens)
+    max_tokens = 4000  # Maximum number of tokens in each variation
+    variations = generate_lorem_ipsum_variations(output_file, num_sentences, lorem_generate, total_samples, max_tokens)
 
 
 if __name__ == "__main__":
