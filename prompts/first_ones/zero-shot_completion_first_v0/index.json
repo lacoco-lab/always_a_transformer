@@ -1,0 +1,1 @@
+{"files":[{"text":"Print the starting character from the \"Input\" sequence below. It can only be 'r', 'w' or 'i'.\n\n-------------------------------\nInput sequence: {{ input }}\n-------------------------------\n\nThe Input sequence starts with character ","name":"task","version":"0","metadata":{}}]}

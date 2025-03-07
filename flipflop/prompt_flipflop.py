@@ -74,7 +74,7 @@ if __name__ == "__main__":
     
     wait_for_engine_to_start(base_url)
     
-    if "llama" in args.save_path.lower():
+    if "llama" in args.save_path.lower() or "mamba" in args.save_path.lower():
         inference_params = LLAMA_INFERENCE_PARAMS
     elif "olmo" in args.save_path.lower():
         inference_params = OLMO_INFERENCE_PARAMS
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     
     client = openai.AsyncClient(
         base_url=base_url, api_key="sk_noreq", max_retries=10)
-    results = batch_chat(flipflops, client, task_prompt, system_prompt, inference_params=inference_params, batch_size=128)
+    results = batch_chat(flipflops, client, task_prompt, system_prompt, inference_params=inference_params, batch_size=32)
     results = merge_data_with_responses(data, results, task, task_type, config)
 
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
