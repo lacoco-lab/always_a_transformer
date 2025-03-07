@@ -64,7 +64,7 @@ if __name__ == "__main__":
     with jsonlines.open(args.ip_path, "r") as reader:
         for obj in reader:
             obj["input"] = obj["input"].strip()
-            obj["gold_ans"] = reverse_string_by_word(obj["input"]) if "reverse" in args.config else obj["output"]
+            obj["gold_ans"] = reverse_string_by_word(obj["input"]) if "reverse" in args.config else obj["input"]
             data.append(obj)
             loremipsum.append(obj["input"])
 
@@ -92,4 +92,4 @@ if __name__ == "__main__":
     results = merge_data_with_responses(data, results)
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
     # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
-    save_to_jsonl(str(save_path), f"bigger_{args.config}_seed-{inference_params['seed']}.jsonl", results)
+    save_to_jsonl(str(save_path), f"500{'_bigger' if 'bigger' in args.ip_path else ''}_{args.config}_seed-{inference_params['seed']}.jsonl", results)
