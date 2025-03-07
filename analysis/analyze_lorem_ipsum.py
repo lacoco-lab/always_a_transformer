@@ -308,6 +308,9 @@ elif 'llama' in args.model:
     if args.seed == 'VERBATIM':
         start_inp, end_inp = 78, 37
         start_out, end_out = 3, 6
+    if args.version == 'completion':
+        start_inp, end_inp = 8, 36
+        start_out, end_out = 3, 6
         
 new_data = []
 # Fix the issue of multiple repetitions in verbatim seed 
@@ -329,8 +332,7 @@ for line in data:
     cleaned_outputs = clean_tokens(line['tokenized_output'][start_out:len(line['tokenized_output'])-end_out])
     str_inputs.append(line['gold_ans'])
     str_outputs.append(line['answer'])
-    print(cleaned_inputs)
-    break
+
     if line['is_correct'] == False:
         num_incorrect += 1
         incorrect_outputs.append({'tokenized_input': cleaned_inputs, 'tokenized_output': cleaned_outputs})
