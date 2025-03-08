@@ -9,6 +9,13 @@ import jsonlines
 from tqdm.auto import tqdm
 
 
+def get_copy_str_files(all_files, samples):
+    # get files containing samples = [60, 90, 150, 300, 500]
+    sample_files = [file for file in all_files if any([str(sample) in str(file) for sample in samples])]
+    only_non_worded_files = [file for file in sample_files if "worded" not in str(file)]
+    return only_non_worded_files
+
+
 def get_flipflop_files(all_files):
     only_500_digit_files = [file for file in all_files if "500.txt" in file.name]
     only_non_worded_files = [file for file in only_500_digit_files if "worded" not in str(file)]
@@ -29,15 +36,16 @@ def process_flipflip_inductionhead_data(data):
     data = curr_choice + data[2:]
     return data
 
-    
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--task", type=str, choices=['first', 'last', 'flipflop', 'flipflop_inductionhead'], 
+    p.add_argument("--task", type=str, choices=['first', 'last', 'flipflop', 'flipflop_inductionhead', 'copy_str'], 
                    required=True, help="Task to pick data for")
     p.add_argument("--input_dir", type=str, required=True, help="Path to the input directory")
     p.add_argument("--output_dir", type=str, required=True, help="Path to the output directory")
     # p.add_argument("--num_samples", type=int, required=True, help="Number of samples to pick")
     p.add_argument("--length", type=int, default=500, required=False, help="Length of the input data")
+    p.add_argument("--max_samples", type=int, default=300, required=False, help="Maximum number of samples to pick")
     args = p.parse_args()
     
     os.makedirs(args.output_dir, exist_ok=True)
@@ -54,6 +62,9 @@ if __name__ == "__main__":
         only_non_worded_files = []
     elif args.task == "flipflop_inductionhead":
         only_non_worded_files = get_flipflop_inductionhead_files(all_files)
+    elif args.task == "copy_str":
+        # TBD
+        only_non_worded_files = get_copy_str_files(all_files, [30, 60, 90, 250])
     else:
         raise ValueError("Invalid task")
     
@@ -65,6 +76,9 @@ if __name__ == "__main__":
             data = [line.strip() for line in f.readlines()] if args.task != "flipflop_inductionhead" else [process_flipflip_inductionhead_data(line.strip()) for line in f.readlines()]
             filenames = [str(file) for _ in range(len(data))]
             jsonl_data.extend([{"input": d, "filename": f} for d, f in zip(data, filenames)])
+    
+    if len(jsonl_data) > args.max_samples:
+        jsonl_data = random.sample(jsonl_data, args.max_samples)
     
     print(f"Number of samples: {len(jsonl_data)} for task: {args.task} and length: {args.length}")
     with jsonlines.open(Path(args.output_dir) / "data.jsonl", "w") as writer:

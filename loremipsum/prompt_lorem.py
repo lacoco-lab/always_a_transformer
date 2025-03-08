@@ -16,7 +16,7 @@ from utils.utils import save_to_jsonl, get_first_write_index
 LLAMA_INFERENCE_PARAMS = {"max_tokens": 16000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
                           "extra_body": {"top_k": -1}}
 
-OLMO_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+OLMO_INFERENCE_PARAMS = {"max_tokens": 2000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
                          "extra_body": {"top_k": -1}}
 
 
@@ -46,6 +46,20 @@ def merge_data_with_responses(data, responses):
 
 def reverse_string_by_word(s):
     return " ".join(s.split()[::-1])
+
+
+def get_op_num_tokens(ip_path):
+    op_num_tokens = 500
+    if "3000" in ip_path:
+        op_num_tokens = 3000
+    elif "4000" in ip_path:
+        op_num_tokens = 4000
+    elif "5000" in ip_path:
+        op_num_tokens = 5000
+    elif "bigger" in ip_path:
+        op_num_tokens = 2000
+    
+    return op_num_tokens
 
 
 if __name__ == "__main__":
@@ -92,4 +106,6 @@ if __name__ == "__main__":
     results = merge_data_with_responses(data, results)
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
     # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
-    save_to_jsonl(str(save_path), f"500{'_bigger' if 'bigger' in args.ip_path else ''}_{args.config}_seed-{inference_params['seed']}.jsonl", results)
+    
+    op_filename = f"{get_op_num_tokens(args.ip_path)}_{args.config}_seed-{inference_params['seed']}.jsonl"
+    save_to_jsonl(str(save_path), op_filename, results)
