@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     client = openai.AsyncClient(base_url=base_url, api_key="sk_noreq", max_retries=10)
     results = batch_chat(loremipsum, client, task_prompt, system_prompt, inference_params=inference_params,
-                         batch_size=4)
+                         batch_size=32)
     results = merge_data_with_responses(data, results)
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
     # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
