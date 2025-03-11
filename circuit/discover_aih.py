@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
-model = HookedTransformer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
+model = HookedTransformer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
 model.eval()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
