@@ -5,4 +5,4 @@ conda activate len-gen
 
 cd /scratch/yanav/repos/len-gen/circuit/
 
-python discover_ih.py
+python discover_aih.py
