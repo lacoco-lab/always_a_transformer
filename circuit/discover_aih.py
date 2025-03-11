@@ -21,6 +21,7 @@ def calculate_induction_score(head, layer, num_samples=1000):
 
     for _ in range(num_samples):
         tokens = generate_synthetic_sequence()
+        tokens.to(device)
 
         _, cache = model.run_with_cache(
             tokens,

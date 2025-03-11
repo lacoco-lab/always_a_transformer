@@ -73,7 +73,7 @@ def plot_attention_map(layer, head, seq_len=50):
     plt.ylabel("Query Position")
     plt.colorbar()
     filename = f"attention_map_layer{layer}_head{head}.png"
-    path = "llama_8b_instruct_aih/" + filename
+    path = "llama_8b_instruct_ih/" + filename
     plt.savefig(path)
     plt.close()
     print(f"Saved {filename}")
