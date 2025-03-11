@@ -4,7 +4,7 @@ from transformer_lens.utils import get_act_name
 import numpy as np
 import matplotlib.pyplot as plt
 
-model = HookedTransformer.from_pretrained("meta-llama/Llama-3.1-8B")
+model = HookedTransformer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
 model.eval()
 
 def generate_synthetic_sequence(vocab_size=model.tokenizer.vocab_size, seq_len=50):
@@ -71,7 +71,7 @@ def plot_attention_map(layer, head, seq_len=50):
     plt.ylabel("Query Position")
     plt.colorbar()
     filename = f"attention_map_layer{layer}_head{head}.png"
-    path = "llama_8b_aih/" + filename
+    path = "llama_8b_instruct_aih/" + filename
     plt.savefig(path)
     plt.close()
     print(f"Saved {filename}")
