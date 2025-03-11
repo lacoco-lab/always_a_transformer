@@ -6,11 +6,10 @@ from transformers import AutoTokenizer
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 import json
+import matplotlib.pyplot as plt
 
-# Load model and tokenizer
-model = HookedTransformer.from_pretrained("meta-llama/Llama-3.1-8B")
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B")
-# If your tokenizer does not have a pad token, consider setting it:
+model = HookedTransformer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
+tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
 
@@ -21,17 +20,17 @@ model.to(device)
 def get_data(path):
     """
     Read jsonl file with the results.
-
-    :param path: dir of the jsonl file
-    :return: arr of dicts with results
+    :param path: path of the jsonl file
+    :return: list of dicts with results
     """
     with open(path, 'r') as file:
         data = [json.loads(line) for line in file]
     return data
 
+
 # Dataset definition
 class CopyTaskDataset:
-    def __init__(self, paragraphs, instruction="Please copy this text exactly:\n"):
+    def __init__(self, paragraphs, instruction="Repeat the paragraph above exactly as it is, without any changes\n"):
         self.paragraphs = paragraphs
         self.instruction = instruction
 
@@ -47,29 +46,36 @@ class CopyTaskDataset:
         }
 
 
-# Collate function to pad sequences in a batch
 def collate_fn(batch):
     texts = [item["text"] for item in batch]
     prompts = [item["prompt"] for item in batch]
     tokens_list = [item["tokens"] for item in batch]
-    # pad_sequence pads a list of tensors to the length of the longest one in the batch.
     padded_tokens = pad_sequence(tokens_list, batch_first=True, padding_value=tokenizer.pad_token_id)
     return {"text": texts, "prompt": prompts, "tokens": padded_tokens}
 
 
-# Accuracy calculation remains unchanged
 def calculate_accuracy(predictions, targets):
     total = 0
     correct = 0
     for pred, target in zip(predictions, targets):
+        print(pred)
+        print(target)
         if pred.strip() == target.strip():
             correct += 1
         total += 1
     return correct / total
 
 
-# Batch version of the induction head analysis
 def analyze_induction_heads_batch(dataloader, num_samples=1500):
+    """
+    Perform batch analysis with sampling settings for generation.
+
+    :param dataloader: DataLoader yielding batches.
+    :param num_samples: Maximum number of samples to process.
+    :param temperature: Temperature for sampling.
+    :param top_k: Top-k parameter for sampling.
+    :return: (induction_scores, accuracy)
+    """
     induction_scores = np.zeros((model.cfg.n_layers, model.cfg.n_heads))
     all_predictions = []
     all_targets = []
@@ -79,43 +85,36 @@ def analyze_induction_heads_batch(dataloader, num_samples=1500):
         tokens = batch["tokens"].to(device)  # shape: [batch_size, seq_len]
         batch_size = tokens.size(0)
 
-        # Run forward pass without cache to obtain predictions.
         with torch.no_grad():
-            logits = model(tokens)  # logits shape: [batch_size, seq_len, vocab_size]
-            # Get the prediction for the last token in each sample.
+            logits = model(tokens)  # shape: [batch_size, seq_len, vocab_size]
             predictions = torch.argmax(logits[:, -1], dim=-1)
 
-        # Decode predictions for each sample in the batch.
+
         for i in range(batch_size):
             generated = tokenizer.decode(predictions[i].cpu().numpy())
             all_predictions.append(generated)
             all_targets.append(batch["text"][i])
 
-        # Run forward pass with cache to capture attention patterns.
+
         _, cache = model.run_with_cache(
             tokens,
             names_filter=lambda name: "attn" in name,
             return_type=None
         )
 
-        # Compute induction head scores for each sample in the batch.
+        # Compute induction head scores.
         for i in range(batch_size):
             seq_tokens = tokens[i]  # [seq_len]
-            # Determine the effective length by ignoring padded tokens.
-            if tokenizer.pad_token_id is not None:
-                valid_length = (seq_tokens != tokenizer.pad_token_id).sum().item()
-            else:
-                valid_length = seq_tokens.size(0)
-
+            valid_length = (
+                        seq_tokens != tokenizer.pad_token_id).sum().item() if tokenizer.pad_token_id is not None else seq_tokens.size(
+                0)
             for layer in range(model.cfg.n_layers):
-                
                 patterns = cache[f"blocks.{layer}.attn.hook_pattern"][i]
                 for head in range(model.cfg.n_heads):
                     head_score = 0.0
                     valid_positions = 0
                     for q_pos in range(1, valid_length):
                         current_token = seq_tokens[q_pos].item()
-                        
                         prev_occurrences = (seq_tokens[:q_pos] == current_token).nonzero(as_tuple=False)
                         if prev_occurrences.numel() == 0:
                             continue
@@ -134,17 +133,57 @@ def analyze_induction_heads_batch(dataloader, num_samples=1500):
     return induction_scores, accuracy
 
 
+def plot_attention_map_for_batch(batch, layer, head):
+    """
+    Plot the averaged attention map for a given batch, layer, and head.
+
+    :param batch: A batch dictionary from the DataLoader (output of collate_fn).
+    :param layer: The layer index for which to plot the attention map.
+    :param head: The head index for which to plot the attention map.
+    """
+    tokens = batch["tokens"].to(device)  # shape: [batch_size, seq_len]
+    _, cache = model.run_with_cache(
+        tokens,
+        names_filter=lambda name: "attn" in name,
+        return_type=None
+    )
+
+    # Extract attention maps: shape [batch_size, n_heads, seq_len, seq_len]
+    attn_maps = cache[f"blocks.{layer}.attn.hook_pattern"]
+    
+    # Select the specific head: [batch_size, seq_len, seq_len]
+    attn_maps_head = attn_maps[:, head, :, :]
+    avg_attn_map = attn_maps_head.mean(dim=0).detach().cpu().numpy()
+
+    token_ids = tokens[0]
+    token_texts = tokenizer.convert_ids_to_tokens(token_ids)
+
+    plt.figure(figsize=(10, 8))
+    plt.imshow(avg_attn_map, cmap='viridis', aspect='auto')
+    plt.colorbar(label='Average Attention Weight')
+    plt.xticks(ticks=np.arange(len(token_texts)), labels=token_texts, rotation=90, fontsize=8)
+    plt.yticks(ticks=np.arange(len(token_texts)), labels=token_texts, fontsize=8)
+    plt.xlabel('Key Tokens')
+    plt.ylabel('Query Tokens')
+    plt.title(f'Average Attention Map for Batch - Layer {layer} Head {head}')
+    plt.tight_layout()
+    filename = f"attention_map_layer{layer}_head{head}.png"
+    path = "llama_8b_instruct_ih/" + "lorem/" + filename
+    plt.savefig(path)
+    plt.close()
+    print(f"Saved {filename}")
+    plt.show()
+
+
 data = get_data('../datasets/500/loremipsum/data.jsonl')
-paragraphs = []
-for par in data:
-    paragraphs.append(par["input"])
+paragraphs = [par["input"] for par in data][:1]
 
 dataset = CopyTaskDataset(paragraphs)
-batch_size = 64
-dataloader = DataLoader(dataset, batch_size=batch_size, collate_fn=collate_fn)
+batch_size = 1
+dataloader = DataLoader(dataset, batch_size=batch_size, collate_fn=collate_fn) 
+
 
 induction_scores, accuracy = analyze_induction_heads_batch(dataloader)
-
 print(f"Copy Task Accuracy: {accuracy:.2%}")
 print("Top Induction Heads:")
 flat_scores = induction_scores.flatten()
@@ -152,4 +191,7 @@ top_indices = np.argpartition(flat_scores, -10)[-10:]
 for idx in top_indices:
     layer = idx // model.cfg.n_heads
     head = idx % model.cfg.n_heads
+    batch = next(iter(dataloader))
+    plot_attention_map_for_batch(batch, layer=layer, head=head)
     print(f"Layer {layer} Head {head}: {flat_scores[idx]:.4f}")
+
