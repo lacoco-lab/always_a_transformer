@@ -29,8 +29,8 @@ def calculate_induction_score(head, layer, num_samples=1000):
         head_patterns = attn_patterns[:, head, :, :]
 
         score = 0
-        for pos in range(seq_len, 2 * seq_len - 1):
-            target_pos = pos - seq_len + 1  
+        for pos in range(seq_len + 1, 2 * seq_len):
+            target_pos = pos - seq_len - 1
             score += head_patterns[0, pos, target_pos].item()
         total_score += score / (seq_len - 1)
 
