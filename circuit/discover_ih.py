@@ -4,8 +4,10 @@ from transformer_lens.utils import get_act_name
 import numpy as np
 import matplotlib.pyplot as plt
 
-model = HookedTransformer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
+model = HookedTransformer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
 model.eval()
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model.to(device)
 
 def generate_synthetic_sequence(vocab_size=model.tokenizer.vocab_size, seq_len=50):
     random_tokens = torch.randint(0, vocab_size, (seq_len,))
