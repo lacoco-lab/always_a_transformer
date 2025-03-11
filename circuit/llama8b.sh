@@ -1,3 +1,4 @@
+#!/bin/bash
 export HF_TOKEN=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
 
 source /scratch/yanav/anaconda3/bin/activate
