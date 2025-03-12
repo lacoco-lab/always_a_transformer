@@ -13,7 +13,7 @@ parser.add_argument("-m", "--model", dest="model",
 args = parser.parse_args()
 
 if args.model == 'llama3.1-8b-instruct':
-    model = "mmeta-llama/Meta-Llama-3-8B-Instruct"
+    model = "meta-llama/Meta-Llama-3-8B-Instruct"
 else:
     model = "meta-llama/Meta-Llama-3-8B"
 
