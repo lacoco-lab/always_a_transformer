@@ -193,6 +193,14 @@ def get_accuracy_unique_bigrams(inputs, outputs):
             total += 1
     
     return correct / total, absent_copies, total
+
+def get_bigram_accuracy(inputs, outputs):
+    """
+    Calculate accuracies of copies of all unique/repeated bigrams in the paragraph.
+    :param inputs: arr of tokenized inputs
+    :param outputs: 
+    :return: 
+    """    
         
 
 def get_accuracy_unique_right(inputs, outputs):
