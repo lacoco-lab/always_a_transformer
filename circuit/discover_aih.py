@@ -13,9 +13,9 @@ parser.add_argument("-m", "--model", dest="model",
 args = parser.parse_args()
 
 if args.model == 'llama3.1-8b-instruct':
-    model = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    model = "meta-llama/Meta-Llama-3-8B-Instruct"
 else:
-    model = "meta-llama/Meta-Llama-3.1-8B"
+    model = "meta-llama/Meta-Llama-3-8B"
 
 model = HookedTransformer.from_pretrained(model)
 model.eval()
