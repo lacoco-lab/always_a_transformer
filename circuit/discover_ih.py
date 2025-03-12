@@ -3,8 +3,20 @@ from transformer_lens import HookedTransformer
 from transformer_lens.utils import get_act_name
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+from argparse import ArgumentParser
 
-model = HookedTransformer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
+parser = ArgumentParser()
+parser.add_argument("-m", "--model", dest="model",
+                        help="choose model")
+args = parser.parse_args()
+
+if args.model == 'llama3.1-8b-instruct':
+    model = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+else:
+    model = "meta-llama/Meta-Llama-3.1-8B"
+
+model = HookedTransformer.from_pretrained(model)
 model.eval()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
@@ -73,7 +85,10 @@ def plot_attention_map(layer, head, seq_len=50):
     plt.ylabel("Query Position")
     plt.colorbar()
     filename = f"attention_map_layer{layer}_head{head}.png"
-    path = "llama_8b_instruct_ih/" + filename
+    if 'instruct' in model.lower():
+        path = "llama_8b_instruct_ih/" + filename
+    else:
+        path = "llama_8b_ih/" + filename
     plt.savefig(path)
     plt.close()
     print(f"Saved {filename}")
