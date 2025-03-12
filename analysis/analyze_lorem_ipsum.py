@@ -1,6 +1,7 @@
 import json
 from argparse import ArgumentParser
 import os
+import re
 
 """
 Args options:
@@ -16,7 +17,7 @@ Models:
 - olmo
 """
 
-EXACT_SEED = '500_exact_seed-5.jsonl'
+EXACT_SEED = '4000_exact_seed-5.jsonl'
 VERBATIM_SEED = '500_verbatim_seed-5.jsonl'
 BIGGER_SEED = 'bigger_verbatim_seed-5.jsonl'
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,19 +25,17 @@ TASK = 'loremipsum'
 RESULTS = 'results'
 
 
-def clean_tokens(tokens):
+
+
+def clean(text):
     """
-    Clean up trailing spaces and 'Ġ'
-    :param tokens: arr, tokenized input/output
-    :return: arr, cleaned input/output
+    Clean and split the input and answer string by whitespace, remove all punctiation marks and characters
+    :param text: string
+    :return: arr of strings of cleaned text
     """
-    
-    cleaned = []
-    for tok in tokens:
-        tok = tok.strip().replace('Ġ', '')
-        tok = tok.replace('Ċ', '')
-        cleaned.append(tok)
-    return cleaned
+    cleaned_text = re.sub(r'[^\w\s]', '', text)
+    words = cleaned_text.split()
+    return words
 
 
 def get_data(path):
@@ -75,25 +74,6 @@ def get_accuracy_first(inputs, outputs):
             continue
             #print(ans)
     return correct / len(inputs), incorrect_firsts
-
-
-def get_accuracy_last_str(inputs, outputs):
-    """
-    OLMo has a lot of tokenization issue. This is a sanity check to check whether the last token in the
-    response string matches (separated by a space, not processed by a tokenizer)
-    
-    :param inputs: arr[str], gold answer
-    :param outputs: arr[str], answer
-    :return: float, accuracy of the last token copy
-    """
-    
-    correct = 0
-    for gold_ans, ans in zip(inputs, outputs):
-        split_ans = ans.split()
-        split_gold_ans = gold_ans.split()
-        if split_ans[len(split_ans)-1].strip('.') == split_gold_ans[len(split_gold_ans)-1].strip('.'):
-            correct += 1
-    return correct / len(inputs)
 
 
 def get_accuracy_last(inputs, outputs):
@@ -213,6 +193,14 @@ def get_accuracy_unique_bigrams(inputs, outputs):
             total += 1
     
     return correct / total, absent_copies, total
+
+def get_bigram_accuracy(inputs, outputs):
+    """
+    Calculate accuracies of copies of all unique/repeated bigrams in the paragraph.
+    :param inputs: arr of tokenized inputs
+    :param outputs: 
+    :return: 
+    """    
         
 
 def get_accuracy_unique_right(inputs, outputs):
@@ -294,23 +282,6 @@ else:
 path = os.path.join(ROOT, RESULTS,  TASK, model, args.prompt_type, seed_path)
 data = get_data(path)
 OUTPUT_FILE = f"output_{model}_{args.prompt_type}_{args.seed}.txt"
-
-# select correct slices
-if args.model == 'olmo':
-    start_inp, end_inp = 28, 41
-    start_out, end_out = 3, 8
-    if args.seed == 'VERBATIM':
-        start_inp, end_inp = 34, 41
-        start_out, end_out = 3, 8
-elif 'llama' in args.model:
-    start_inp, end_inp = 72, 37
-    start_out, end_out = 3, 6
-    if args.seed == 'VERBATIM':
-        start_inp, end_inp = 78, 37
-        start_out, end_out = 3, 6
-    if args.version == 'completion':
-        start_inp, end_inp = 8, 36
-        start_out, end_out = 3, 6
         
 new_data = []
 # Fix the issue of multiple repetitions in verbatim seed 
@@ -324,18 +295,16 @@ if new_data != []:
     data = new_data
 
 inputs, outputs = [], []
-str_inputs, str_outputs = [], []
 incorrect_outputs = []
 num_incorrect = 1
 for line in data:
-    cleaned_inputs = clean_tokens(line['tokenized_input'][start_inp:len(line['tokenized_input'])-end_inp])
-    cleaned_outputs = clean_tokens(line['tokenized_output'][start_out:len(line['tokenized_output'])-end_out])
-    str_inputs.append(line['gold_ans'])
-    str_outputs.append(line['answer'])
+    cleaned_inputs = clean(line['input'])
+    cleaned_outputs = clean(line['answer'])
 
     if line['is_correct'] == False:
         num_incorrect += 1
         incorrect_outputs.append({'tokenized_input': cleaned_inputs, 'tokenized_output': cleaned_outputs})
+    
     inputs.append(cleaned_inputs)
     outputs.append(cleaned_outputs)
 print(f"Total incorrect: {num_incorrect} out of {len(data)}.")
@@ -343,14 +312,12 @@ print(f"Total incorrect: {num_incorrect} out of {len(data)}.")
 accuracy_first, incorrect_firsts = get_accuracy_first(inputs, outputs)
 accuracy_last, incorrect_lasts = get_accuracy_last(inputs, outputs)
 accuracy_ind, absent_copies, total_unique = get_accuracy_unique_right(inputs, outputs)
-accuracy_last_str = get_accuracy_last_str(str_inputs, str_outputs)
 accuracy_unique_bigrams, absent_copies_bg, total_unique_bg = get_accuracy_unique_bigrams(inputs, outputs)
 accuracy_repeated_bigrams, absent_copies_rep, total_rep = get_accuracy_repeated_bigrams(inputs, outputs)
 
 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
     print(f'First accuracy: {accuracy_first*100}%')
     print(f'Last accuracy: {accuracy_last*100}%')
-    print(f'Last accuracy (string manner): {accuracy_last_str*100}%')
     print(f'Unique token + right accuracy: {accuracy_ind*100}% for total of {total_unique} tokens.')
     print(f'Unique bigrams accuracy:  {accuracy_unique_bigrams*100}% for total of {total_unique_bg} bigrams.')
     print(f'Repeated bigrams accuracy: {accuracy_repeated_bigrams*100}% for total of {total_rep} bigrams.')
