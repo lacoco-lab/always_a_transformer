@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
-model = HookedTransformer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
+model = HookedTransformer.from_pretrained("meta-llama/Llama-3.1-8B")
 model.eval()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
@@ -76,7 +76,7 @@ def plot_attention_map(layer, head, seq_len=50):
     plt.ylabel("Query Position")
     plt.colorbar()
     filename = f"attention_map_layer{layer}_head{head}.png"
-    path = "llama_8b_instruct_aih/" + filename
+    path = "llama_8b_aih/" + filename
     plt.savefig(path)
     plt.close()
     print(f"Saved {filename}")
