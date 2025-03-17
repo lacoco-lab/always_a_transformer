@@ -47,7 +47,7 @@ for example in data:
             max_new = 2
         elif args.version == 'instruct':
             max_new = 16000
-        generated_tokens = model.generate(tokens, max_new_tokens=max_new, stop_at_eos=True, temperature=0, use_cache=True)
+        generated_tokens = model.generate(tokens, max_new_tokens=max_new, stop_at_eos=True, temperature=0)
 
     new_tokens = generated_tokens[0, tokens.shape[-1]:]
     generated_text = model.to_string(new_tokens)
