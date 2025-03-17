@@ -46,7 +46,7 @@ for example in data:
         if args.version == 'non-instruct':
             max_new = 2
         elif args.version == 'instruct':
-            max_new = 5000
+            max_new = 16000
         generated_tokens = model.generate(tokens, max_new_tokens=max_new, stop_at_eos=True)
 
     new_tokens = generated_tokens[0, tokens.shape[-1]:]
@@ -58,7 +58,6 @@ for example in data:
         'full_answer': generated_text
     }
     answers.append(answer)
-    break
 
 output_path = 'results/' + args.model + '_' + args.version + '_' + args.task + '_' + args.type + '.jsonl'
 with jsonlines.open(output_path, mode='w') as writer:
