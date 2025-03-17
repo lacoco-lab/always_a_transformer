@@ -13,12 +13,14 @@ args = parser.parse_args()
 
 if args.model == 'llama3.1-8b-instruct':
     model = "meta-llama/Meta-Llama-3-8B-Instruct"
+    version = 'instruct'
 else:
-    model = "meta-llama/Meta-Llama-3-8B"
+    model = "EleutherAI/pythia-1.4b-deduped"
+    version = 'non-instruct'
 
 model = HookedTransformer.from_pretrained(model)
 model.eval()
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else "mps"
 model.to(device)
 
 def generate_synthetic_sequence(vocab_size=model.tokenizer.vocab_size, seq_len=50):
@@ -85,10 +87,10 @@ def plot_attention_map(layer, head, seq_len=50):
     plt.ylabel("Query Position")
     plt.colorbar()
     filename = f"attention_map_layer{layer}_head{head}.png"
-    if 'instruct' in model.lower():
-        path = "llama_8b_instruct_ih/" + filename
+    if version == 'instruct':
+        path = "pythia_1b_instruct_ih/" + filename
     else:
-        path = "llama_8b_ih/" + filename
+        path = "pythia_1b_ih/" + filename
     plt.savefig(path)
     plt.close()
     print(f"Saved {filename}")

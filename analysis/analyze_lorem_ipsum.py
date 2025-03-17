@@ -17,9 +17,9 @@ Models:
 - olmo
 """
 
-EXACT_SEED = '4000_exact_seed-5.jsonl'
+EXACT_SEED = '2000_verbatim_seed-5.jsonl'
 VERBATIM_SEED = '500_verbatim_seed-5.jsonl'
-BIGGER_SEED = 'bigger_verbatim_seed-5.jsonl'
+BIGGER_SEED = '2000_verbatim_seed-5.jsonl'
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TASK = 'loremipsum'
 RESULTS = 'results'
@@ -201,7 +201,7 @@ def get_bigram_accuracy(inputs, outputs):
     :param outputs: 
     :return: 
     """    
-        
+    pass  
 
 def get_accuracy_unique_right(inputs, outputs):
     """
@@ -251,7 +251,7 @@ parser.add_argument("-m", "--model", dest="model",
 parser.add_argument("-s", "--seed", dest="seed",
                         help="choose seed to load")
 parser.add_argument("-pt", "--prompt_type", dest="prompt_type",
-                    help="choose prompt type folder", default="zero-shot_chat_v0")
+                    help="choose prompt type folder", default="zero-shot_completion_v0")
 parser.add_argument("-v", "--version", dest="version", help="instruct or completion model version")
 
 args = parser.parse_args()
