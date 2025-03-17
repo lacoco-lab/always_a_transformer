@@ -40,7 +40,7 @@ for example in data:
     tokens = model.to_tokens(prompt)
 
     hooks = [
-        (f'blocks.{layer}.attn.hook_v', ablate_head_hook(layer, head))
+        (f'blocks.{layer}.attn.hook_result', ablate_head_hook(layer, head))
         for layer, head in heads_to_ablate
     ]
 
