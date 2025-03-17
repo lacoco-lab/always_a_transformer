@@ -8,7 +8,6 @@ from utils import combine_params, get_data, load_heads, render_prompt, get_gold_
 
 def ablate_head_hook(layer, head):
     def hook(value, hook):
-        print(value.shape)
         value[:, :, head, :] = 0  # zero-out the specific head
         return value
     return hook
@@ -27,11 +26,10 @@ model = HookedTransformer.from_pretrained(model_name)
 heads_to_ablate = load_heads(model_name, ablation_type)
 data = get_data(data_path)
 
-template_str = "{{ system }} {{ user_input }}:"
+template_str = "{{ system }} {{ user_input }}"
 system_path = 'templates/system.jinja'
 template = Template(template_str)
 heads_to_ablate = load_heads(model_name)
-print(model.cfg)
 
 answers = []
 for example in data:
@@ -54,11 +52,9 @@ for example in data:
         'input': example['input'],
         'gold_ans_char': get_gold_ans(example['input'], args.task),
         'full_answer': generated_text,
-        'answer': model.to_string(new_tokens[1]),
-        'is_correct': get_gold_ans(example['input'], args.task) == model.to_string(new_tokens[1]),
+        'answer': model.to_string(new_tokens[1])
     }
     answers.append(answer)
-    break
 
 output_path = 'results/' + args.model + '_' + args.version + '_' + args.task + '_' + args.type + '.jsonl'
 with jsonlines.open(output_path, mode='w') as writer:
