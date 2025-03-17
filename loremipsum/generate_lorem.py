@@ -1,14 +1,12 @@
 import json
-import tqdm
 import random
-import lorem
-import random
-from collections import defaultdict
 
-from hf_olmo import OLMoTokenizerFast
+import lorem
+
+from transformers import AutoTokenizer
 
 # Load the tokenizer for the "allenai/OLMo-7B-Instruct" model
-tokenizer = OLMoTokenizerFast.from_pretrained("allenai/OLMo-7B-Instruct")
+tokenizer = AutoTokenizer.from_pretrained("allenai/OLMo-7B-0724-Instruct-hf")
 results_file = [
         # "results/loremipsum/llama3.1_8B-instruct/zero-shot_chat_v0/500_exact_seed-5.jsonl",
         # "/Users/yash/Desktop/Lacoco/len-gen/results/loremipsum/llama3.1_8B-instruct/zero-shot_chat_v0/500_verbatim_seed-5.jsonl",
@@ -171,16 +169,17 @@ def generate_lorem_ipsum_variations(file_name, num_sentences=200, lorem_generate
 
 def main():
     # Specify the file to save the variations
-    output_file = "datasets/500/loremipsum/data_4000_tokens.jsonl"
+    output_file = "datasets/500/loremipsum/data_100_tokens.jsonl"
     # output_file = "datasets/500/loremipsum/data_5000_tokens.jsonl"
     # For 3000 tokens, lorem_generate = 5, num_sentences = 200, total_samples = 1500
     # For 1500 tokens, lorem_generate = 3, num_sentences = 110, total_samples = 1500
     # For 4000 tokens, lorem_generate = 7, num_sentences = 300, total_samples = 1500
     # For 5000 tokens, lorem_generate = 15, num_sentences = 400, total_samples = 1500
-    lorem_generate = 10  # Number of lorem ipsum paragraphs to generate
-    num_sentences = 380  # Number of sentences in each variation
+    # For 150 tokens, lorem_generate = 3, num_sentences = 12, total_samples = 1500
+    lorem_generate = 3  # Number of lorem ipsum paragraphs to generate
+    num_sentences = 12  # Number of sentences in each variation
     total_samples = 1500  # Number of variations to generate
-    max_tokens = 4000  # Maximum number of tokens in each variation
+    max_tokens = 100  # Maximum number of tokens in each variation
     variations = generate_lorem_ipsum_variations(output_file, num_sentences, lorem_generate, total_samples, max_tokens)
 
 

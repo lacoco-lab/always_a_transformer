@@ -13,11 +13,9 @@ from utils.utils import save_to_jsonl, get_first_write_index
 # INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
 #                              "extra_body": {"top_k": -1}}
 
-LLAMA_INFERENCE_PARAMS = {"max_tokens": 2, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
-                          "extra_body": {"top_k": -1}}
+INFERENCE_PARAMS = {"max_tokens": 30, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+                    "extra_body": {"top_k": -1}}
 
-OLMO_INFERENCE_PARAMS = {"max_tokens": 2, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
-                         "extra_body": {"top_k": -1}}
 
 
 def merge_data_with_responses(data, responses, task="before"):
@@ -31,6 +29,21 @@ def merge_data_with_responses(data, responses, task="before"):
         d["output_length"] = resp.usage.completion_tokens
         d["tokenized_output"] = resp.choices[0].logprobs.tokens
     return data
+
+
+def get_op_num_tokens(ip_path):
+    op_num_tokens = 500
+    if "3000" in ip_path:
+        op_num_tokens = 3000
+    elif "4000" in ip_path:
+        op_num_tokens = 4000
+    elif "5000" in ip_path:
+        op_num_tokens = 5000
+    elif "bigger" in ip_path:
+        op_num_tokens = 2000
+    elif '100' in ip_path:
+        op_num_tokens = 100
+    return op_num_tokens
 
 
 if __name__ == "__main__":
@@ -62,16 +75,12 @@ if __name__ == "__main__":
 
     wait_for_engine_to_start(base_url)
 
-    if "llama" in args.save_path.lower() or "mamba" in args.save_path.lower():
-        inference_params = LLAMA_INFERENCE_PARAMS
-    elif "olmo" in args.save_path.lower():
-        inference_params = OLMO_INFERENCE_PARAMS
-    else:
-        raise ValueError("Unknown model")
+    inference_params = INFERENCE_PARAMS
 
     client = openai.AsyncClient(base_url=base_url, api_key="sk_noreq", max_retries=10)
     results = batch_complete(inductionheads, client, task_prompt, inference_params=inference_params, batch_size=32)
     results = merge_data_with_responses(data, results, task=args.config)
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
-    # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
-    save_to_jsonl(str(save_path), f"500_{args.config}_seed-{inference_params['seed']}.jsonl", results)
+
+    op_filename = f"{get_op_num_tokens(args.ip_path)}_{args.config}_seed-{inference_params['seed']}.jsonl"
+    save_to_jsonl(str(save_path), op_filename, results)

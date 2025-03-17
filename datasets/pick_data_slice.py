@@ -16,14 +16,14 @@ def get_copy_str_files(all_files, samples):
     return only_non_worded_files
 
 
-def get_flipflop_files(all_files):
-    only_500_digit_files = [file for file in all_files if "500.txt" in file.name]
+def get_flipflop_files(all_files, filter_str='500.txt'):
+    only_500_digit_files = [file for file in all_files if filter_str in file.name]
     only_non_worded_files = [file for file in only_500_digit_files if "worded" not in str(file)]
     return only_non_worded_files
 
 
-def get_flipflop_inductionhead_files(all_files):
-    only_500_digit_files = [file for file in all_files if "500_w" in file.name]
+def get_flipflop_inductionhead_files(all_files, filter_str='500_w'):
+    only_500_digit_files = [file for file in all_files if filter_str in file.name]
     only_non_worded_files = [file for file in only_500_digit_files if "s3" in str(file)]
     return only_non_worded_files
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     all_files = Path(args.input_dir).rglob("*.txt")
     
     if args.task == "flipflop":
-        only_non_worded_files = get_flipflop_files(all_files)
+        only_non_worded_files = get_flipflop_files(all_files, filter_str='100.txt')
     elif args.task == "first":
         # TBD
         only_non_worded_files = []
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         # TBD
         only_non_worded_files = []
     elif args.task == "flipflop_inductionhead":
-        only_non_worded_files = get_flipflop_inductionhead_files(all_files)
+        only_non_worded_files = get_flipflop_inductionhead_files(all_files, filter_str='100_w')
     elif args.task == "copy_str":
         # TBD
         only_non_worded_files = get_copy_str_files(all_files, [30, 60, 90, 250])

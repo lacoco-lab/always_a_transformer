@@ -28,11 +28,11 @@ mkdir -p ~/.config/vllm && touch ~/.config/vllm/do_not_track
 #
 #VLLMPID=$!
 #
-#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0/ --config verbatim --save_path results/loremipsum/llama3.1_70B --port $PORT
-#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0/ --config exact --save_path results/loremipsum/llama3.1_70B --port $PORT
+#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config verbatim --save_path results/loremipsum/llama3.1_70B --port $PORT
+#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config exact --save_path results/loremipsum/llama3.1_70B --port $PORT
 #
-#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0/ --config verbatim --save_path results/loremipsum/llama3.1_70B --port $PORT
-#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0/ --config exact --save_path results/loremipsum/llama3.1_70B --port $PORT
+#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config verbatim --save_path results/loremipsum/llama3.1_70B --port $PORT
+#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config exact --save_path results/loremipsum/llama3.1_70B --port $PORT
 #
 #kill $VLLMPID
 #
@@ -40,24 +40,33 @@ mkdir -p ~/.config/vllm && touch ~/.config/vllm/do_not_track
 
 # For llama3.1_8B
 
-vllm serve meta-llama/Llama-3.1-8B --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 32000 --max-num-batched-tokens 256000 &
+#vllm serve meta-llama/Llama-3.1-8B --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 32000 --max-num-batched-tokens 256000 &
+#
+#VLLMPID=$!
+#
+#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config verbatim --save_path results/loremipsum/llama3.1_8B --port $PORT
+#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config exact --save_path results/loremipsum/llama3.1_8B --port $PORT
+#
+#kill $VLLMPID
+#
+#sleep 5
+#
+## For OLMo_7B
+#
+#vllm serve /scratch/common_models/OLMo-7B-0724-hf --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 4096 --max-num-batched-tokens 256000 &
+#
+#VLLMPID=$!
+#
+#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config verbatim --save_path results/loremipsum/OLMo_7B --port $PORT
+#python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config exact --save_path results/loremipsum/OLMo_7B --port $PORT
+#
+#kill $VLLMPID
+
+vllm serve EleutherAI/pythia-1.4b-deduped --tensor-parallel-size 2 --gpu-memory-utilization 0.85 --disable-log-stats --api-key "sk_noreq" --host 0.0.0.0 --port 8087 --max-seq-len-to-capture 500 --max-num-batched-tokens 32000 &
 
 VLLMPID=$!
 
-python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0/ --config verbatim --save_path results/loremipsum/llama3.1_8B --port $PORT
-python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0/ --config exact --save_path results/loremipsum/llama3.1_8B --port $PORT
-
-kill $VLLMPID
-
-sleep 5
-
-# For OLMo_7B
-
-vllm serve /scratch/common_models/OLMo-7B-0724-hf --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 4096 --max-num-batched-tokens 256000 &
-
-VLLMPID=$!
-
-python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0/ --config verbatim --save_path results/loremipsum/OLMo_7B --port $PORT
-python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0/ --config exact --save_path results/loremipsum/OLMo_7B --port $PORT
+python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data_100_tokens.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config verbatim --save_path results/loremipsum/pythia-1.4b --port 8087
+python loremipsum/complete_lorem.py --ip_path datasets/500/loremipsum/data_100_tokens.jsonl --prompt_path prompts/loremipsum/zero-shot_completion_v0 --config exact --save_path results/loremipsum/pythia-1.4b --port 8087
 
 kill $VLLMPID
