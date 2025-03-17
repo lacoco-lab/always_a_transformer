@@ -49,6 +49,7 @@ def calculate_copy_accuracy(original_bigrams, copied_bigrams):
         elif copied_bigram not in original_bigrams:  # Hallucinated bigram
             copied_idx += 1  # Skip this bigram in copied sequence
         else:
+            # this case might indicate a hallucinated token, need to think about it
             orig_idx += 1  # Move forward in original sequence
 
     unique_accuracy = correct_unique / total_unique if total_unique > 0 else 0
