@@ -31,6 +31,7 @@ template_str = "{{ system }} {{ user_input }}:"
 system_path = 'templates/system.jinja'
 template = Template(template_str)
 heads_to_ablate = load_heads(model_name)
+print(model.cfg)
 
 answers = []
 for example in data:
