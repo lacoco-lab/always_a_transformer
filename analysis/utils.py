@@ -157,6 +157,8 @@ def get_bigram_accuracy(inputs, ouputs):
     unique_accs = []
     non_unique_accs = []
     
+    error_cases = []
+    
     for inp, out in zip(inputs, ouputs):
         original_bigrams = list(nltk.bigrams(inp.split()))
         ans = pad_ans(inp, out)
@@ -188,13 +190,22 @@ def get_bigram_accuracy(inputs, ouputs):
                 # this case might indicate a hallucinated token, need to think about it
                 orig_idx += 1  # Move forward in original sequence
     
-        unique_accuracy = correct_unique / total_unique if total_unique > 0 else 0
-        non_unique_accuracy = correct_non_unique / total_non_unique if total_non_unique > 0 else 0
+        unique_accuracy = correct_unique / total_unique
+        non_unique_accuracy = correct_non_unique / total_non_unique
         
+        if unique_accuracy != 1:
+            error_cases.append(
+                {
+                    'original': original_bigrams,
+                    'copied': copied_bigrams,
+                    'unique_bigrams': unique_bigrams,
+                }
+            )
+            
         unique_accs.append(unique_accuracy)
         non_unique_accs.append(non_unique_accuracy)
     
-    return sum(unique_accs)/len(inputs), sum(non_unique_accs)/len(inputs)
+    return sum(unique_accs)/len(inputs), sum(non_unique_accs)/len(inputs), error_cases
 
 
 def get_model_name(model_key, version):
