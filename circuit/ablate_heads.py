@@ -1,8 +1,6 @@
-import transformer_lens
 from jinja2 import Template
 from transformer_lens import HookedTransformer
 from argparse import ArgumentParser
-import torch
 import jsonlines
 from utils import combine_params, get_data, load_heads, render_prompt, get_gold_ans
 
@@ -24,7 +22,7 @@ model_name, task_path, version, data_path, ablation_type = combine_params(args)
 
 model = HookedTransformer.from_pretrained(model_name)
 heads_to_ablate = load_heads(model_name, ablation_type)
-data = get_data(data_path)
+data = get_data(data_path)[:100]
 
 template_str = "{{ system }} {{ user_input }}"
 system_path = 'templates/system.jinja'
