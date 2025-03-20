@@ -69,7 +69,7 @@ print(f"Total incorrect: {num_incorrect} out of {len(data)}.")
 accuracy_first, incorrect_firsts = get_accuracy_first(inputs, outputs)
 accuracy_last, incorrect_lasts = get_accuracy_last(inputs, outputs)
 accuracy_ind, absent_copies, total_unique = get_accuracy_unique_right(inputs, outputs)
-accuracy_unique_bigrams, accuracy_repeated_bigrams = get_bigram_accuracy(inputs, outputs)
+accuracy_unique_bigrams, accuracy_repeated_bigrams, error_cases = get_bigram_accuracy(inputs, outputs)
 
 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
     print(f"First accuracy: {accuracy_first * 100}%")
@@ -102,5 +102,12 @@ with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(f"Absent copies: {len(absent_copies)}\n")
         for inp in absent_copies:
             f.write(f"{inp['token']}\n{inp['input']}\n{inp['output']}\n=====================\n")
+            
+            
+    f.write(f"DT bigrams accuracy: {accuracy_unique_bigrams * 100}%\n")
+    if error_cases:
+        f.write(f"Error cases: {len(error_cases)}\n")
+        for inp in error_cases:
+            f.write(f"{inp['unique_bigrams']}\n{inp['original']}\n{inp['copied']}\n=====================\n")
 
 print(f"Output written to {OUTPUT_FILE}")
