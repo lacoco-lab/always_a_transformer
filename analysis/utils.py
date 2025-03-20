@@ -1,6 +1,6 @@
 import nltk
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 import json
 
 
@@ -118,20 +118,39 @@ def clean_text(sentence):
     return re.sub(r'[^\w\s]', '', sentence).replace('\n', ' ').replace('\r', '')
 
 
-def classify_bigrams(original_bigrams):
+def get_bigram_counts(bigrams):
     """
-    Classify bigrams into unique and non-unique based on the first token's predictability.
-    :param original_bigrams: arr
-    return: arr
+    Get counts of each bigram in the sentence.
+    :param bigrams: arr 
+    :return: dict
     """
-    first_token_map = defaultdict(set)
+    bigram_counts = Counter(bigrams)
 
-    for first, second in original_bigrams:
-        first_token_map[first].add(second)
+    return bigram_counts
 
-    unique_bigrams = {bigram for bigram in original_bigrams if len(first_token_map[bigram[0]]) == 1}
-    non_unique_bigrams = {bigram for bigram in original_bigrams if len(first_token_map[bigram[0]]) > 1}
-    return unique_bigrams, non_unique_bigrams
+
+def classify_bigrams(text: str):
+    """
+    Categorize bigrams into deterministic and non-deterministic based on the second token in the bigram.
+
+    :param text: str, word-level input
+    :return: arr, arr, arr
+    """
+    bigrams = list(nltk.bigrams(text.strip().replace(".", "").split()))
+
+    first_dict = defaultdict(set)
+    for first, second in bigrams:
+        first_dict[first].add(second)
+    deterministic = []
+    non_deterministic = []
+
+    for (first, second) in bigrams:
+        if len(first_dict[first]) == 1:
+            deterministic.append((first, second))
+        else:
+            non_deterministic.append((first, second))
+
+    return bigrams, deterministic, non_deterministic
 
 
 def pad_ans(gold, ans):
