@@ -77,8 +77,9 @@ def get_bigram_accuracy(inp, out):
         o_bigram = orig_bigrams[orig_idx]
         c_bigram = cp_bigrams[copied_idx]
         print(o_bigram, c_bigram)
-
-        if c_bigram[0] == o_bigram[0]:  # First token must match
+    
+        # wrote conditions explicitly for traceability 
+        if c_bigram[0] == o_bigram[0]:  # First token must match - this case is the correct copy of everything
             if c_bigram[1] == o_bigram[1]:  # Correct copy of second token
                 target_dict = dt_bigram_accs if o_bigram in dt else non_dt_bigram_accs if o_bigram in non_dt else None
                 if target_dict is not None:
@@ -87,8 +88,12 @@ def get_bigram_accuracy(inp, out):
                 copied_idx += 1  # Move forward in copied bigrams
 
             elif c_bigram[1] != o_bigram[1]:  # Mismatch in second token
-                orig_idx += 1 
-
+                copied_idx += 1 
+        
+        # so the second case is a bit trickier
+        # because if both first and second mismatch, then we need to move only the original pointer
+        # else, it might mean that the second token is actually the beginning of the next bigram, so 
+        # in that case the pointer of the copy should be moved
         elif o_bigram[0] != c_bigram[0]:  # First token mismatch
             if o_bigram[1] == c_bigram[1]: # Second match
                 copied_idx += 1
@@ -104,7 +109,7 @@ def get_bigram_accuracy(inp, out):
 
 if __name__ == "__main__":
     sentence = "a b c c a f b c"
-    copy = "a c c a f b c"
+    copy = "a b c c a f b c"
     bigrams, dt, non_dt = categorize_bigrams(sentence)
     #print("All bigrams: ", bigrams)
     #print("Copy bigrams: ", list(nltk.bigrams(copy.strip().replace(".", "").split())))
