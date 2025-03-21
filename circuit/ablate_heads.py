@@ -21,13 +21,12 @@ args = parser.parse_args()
 model_name, task_path, version, data_path, ablation_type = combine_params(args)
 
 model = HookedTransformer.from_pretrained(model_name)
-heads_to_ablate = load_heads(model_name, ablation_type)
 data = get_data(data_path)[:100]
 
 template_str = "{{ system }} {{ user_input }}"
 system_path = 'templates/system.jinja'
 template = Template(template_str)
-heads_to_ablate = load_heads(model_name)
+heads_to_ablate = load_heads(model_name, ablation_type)
 
 answers = []
 for example in data:

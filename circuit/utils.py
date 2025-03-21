@@ -45,7 +45,7 @@ def get_data(path):
     return data
 
 
-def load_heads(model, type='induction'):
+def load_heads(model, type):
     """
     Load heads to ablate for a respective model.
     :param model: str, model name
