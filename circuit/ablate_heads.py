@@ -25,7 +25,7 @@ model_name, task_path, version, data_path, ablation_type = combine_params(args)
 model = HookedTransformer.from_pretrained(model_name)
 data = get_data(data_path)[:100]
 inp_length  = len(data[0]['input'])
-
+model.cfg.use_attn_result = True # to use hook_result
 
 template_str = "{{ system }} {{ user_input }}"
 system_path = 'templates/system.jinja'
@@ -46,7 +46,7 @@ for example in data:
     print("\n".join(model.hook_dict.keys()))
 
     hooks = [
-        (f'blocks.{layer}.attn.hook_z', ablate_head_hook(layer, head))
+        (f'blocks.{layer}.attn.hook_result', ablate_head_hook(layer, head))
         for layer, head in heads_to_ablate
     ]
 
