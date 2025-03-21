@@ -6,7 +6,11 @@ conda activate len-gen
 
 cd /scratch/yanav/repos/len-gen/circuit/
 
-python ablate_heads.py -m llama -v non-instruct -t after -tp induction -l 20
-python ablate_heads.py -m llama -v non-instruct -t after -tp induction -l 30
-python ablate_heads.py -m llama -v non-instruct -t after -tp induction -l 50
-python ablate_heads.py -m llama -v non-instruct -t after -tp induction -l 100
+python ablate_heads.py -m llama -v non-instruct -t after -tp random-end -l 20
+python ablate_heads.py -m llama -v non-instruct -t after -tp random-end -l 30
+python ablate_heads.py -m llama -v non-instruct -t after -tp random-end -l 50
+python ablate_heads.py -m llama -v non-instruct -t after -tp random-end -l 100
+python ablate_heads.py -m llama -v non-instruct -t after -tp random-mid -l 20
+python ablate_heads.py -m llama -v non-instruct -t after -tp random-mid -l 30
+python ablate_heads.py -m llama -v non-instruct -t after -tp random-mid -l 50
+python ablate_heads.py -m llama -v non-instruct -t after -tp random-mid -l 100

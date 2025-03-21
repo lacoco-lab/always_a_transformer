@@ -43,7 +43,7 @@ for example in data:
     prompt = template.render(system=system_prompt, user_input=task_prompt)
     tokens = model.to_tokens(prompt)
 
-    print("\n".join(model.hook_dict.keys()))
+    #print("\n".join(model.hook_dict.keys()))
 
     hooks = [
         (f'blocks.{layer}.attn.hook_result', ablate_head_hook(layer, head))
