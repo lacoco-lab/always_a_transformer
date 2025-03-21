@@ -57,7 +57,7 @@ for example in data:
     }
     answers.append(answer)
 
-output_path = 'results/' + args.model + '_' + args.version + '_' + args.task + '_' + args.type + "_" + inp_length + '.jsonl'
+output_path = 'results/' + args.model + '_' + args.version + '_' + args.task + '_' + args.type + "_" + str(inp_length) + '.jsonl'
 with jsonlines.open(output_path, mode='w') as writer:
     writer.write_all(answers)
 
