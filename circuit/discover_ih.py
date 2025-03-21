@@ -15,7 +15,7 @@ if args.model == 'llama3.1-8b-instruct':
     model = "meta-llama/Meta-Llama-3-8B-Instruct"
     version = 'instruct'
 else:
-    model = "EleutherAI/pythia-1.4b-deduped"
+    model = "meta-llama/Meta-Llama-3-8B"
     version = 'non-instruct'
 
 model = HookedTransformer.from_pretrained(model)
