@@ -10,10 +10,7 @@ from banks.registries import DirectoryPromptRegistry
 from utils.vllm_openai_server import batch_complete, wait_for_engine_to_start
 from utils.utils import save_to_jsonl, get_first_write_index
 
-# INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
-#                              "extra_body": {"top_k": -1}}
-
-INFERENCE_PARAMS = {"max_tokens": 30, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+INFERENCE_PARAMS = {"max_tokens": 2, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
                     "extra_body": {"top_k": -1}}
 
 

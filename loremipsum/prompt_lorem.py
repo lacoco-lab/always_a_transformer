@@ -13,10 +13,10 @@ from utils.utils import save_to_jsonl, get_first_write_index
 # INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
 #                              "extra_body": {"top_k": -1}}
 
-LLAMA_INFERENCE_PARAMS = {"max_tokens": 16000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+LCTX_INFERENCE_PARAMS = {"max_tokens": 16000, "temperature": 0, "logprobs": True, "seed": 5,
                           "extra_body": {"top_k": -1}}
 
-OLMO_INFERENCE_PARAMS = {"max_tokens": 2000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+SCTX_INFERENCE_PARAMS = {"max_tokens": 2000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
                          "extra_body": {"top_k": -1}}
 
 
@@ -93,10 +93,10 @@ if __name__ == "__main__":
 
     wait_for_engine_to_start(base_url)
 
-    if "llama" in args.save_path.lower() or "mamba" in args.save_path.lower():
-        inference_params = LLAMA_INFERENCE_PARAMS
+    if "llama" in args.save_path.lower() or "qwq" in args.save_path.lower():
+        inference_params = LCTX_INFERENCE_PARAMS
     elif "olmo" in args.save_path.lower():
-        inference_params = OLMO_INFERENCE_PARAMS
+        inference_params = SCTX_INFERENCE_PARAMS
     else:
         raise ValueError("Unknown model")
 

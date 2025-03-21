@@ -23,7 +23,7 @@ def get_flipflop_files(all_files, filter_str='500.txt'):
 
 
 def get_flipflop_inductionhead_files(all_files, filter_str='500_w'):
-    only_500_digit_files = [file for file in all_files if filter_str in file.name]
+    only_500_digit_files = [file for file in all_files if filter_str in file.name and "w0" not in file.name]
     only_non_worded_files = [file for file in only_500_digit_files if "s3" in str(file)]
     return only_non_worded_files
 
