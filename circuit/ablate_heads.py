@@ -46,24 +46,27 @@ for example in data:
     print("\n".join(model.hook_dict.keys()))
 
     hooks = [
-        (f'blocks.{layer}.attn.hook_z', ablate_head_hook(layer, head))
+        (f'blocks.{layer}.attn.hook_result', ablate_head_hook(layer, head))
         for layer, head in heads_to_ablate
     ]
-
+    
     with model.hooks(fwd_hooks=hooks):
-        if args.version == 'non-instruct':
-            max_new = 2
-        elif args.version == 'instruct':
-            max_new = 5000
-        generated_tokens = model.generate(tokens, max_new_tokens=max_new, stop_at_eos=True, temperature=0)
+        _ = model(tokens)
 
-    new_tokens = generated_tokens[0, tokens.shape[-1]:]
-    generated_text = model.to_string(new_tokens)
+    #with model.hooks(fwd_hooks=hooks):
+        #if args.version == 'non-instruct':
+            #max_new = 2
+        #elif args.version == 'instruct':
+           # max_new = 5000
+        #generated_tokens = model.generate(tokens, max_new_tokens=max_new, stop_at_eos=True, temperature=0)
+
+    #new_tokens = generated_tokens[0, tokens.shape[-1]:]
+    #generated_text = model.to_string(new_tokens)
     
     answer = {
         'input': example['input'],
         'gold_ans_char': get_gold_ans(example['input'], args.task),
-        'full_answer': generated_text
+        #'full_answer': generated_text
     }
     answers.append(answer)
     break
