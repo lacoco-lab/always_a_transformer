@@ -6,6 +6,7 @@ from utils import combine_params, get_data, load_heads, render_prompt, get_gold_
 
 def ablate_head_hook(layer, head):
     def hook(value, hook):
+        print(f"Ablating head {head} in layer {layer}")
         value[:, :, head, :] = 0  # zero-out the specific head
         return value
     return hook
