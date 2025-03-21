@@ -6,7 +6,7 @@ from utils import combine_params, get_data, load_heads, render_prompt, get_gold_
 
 def ablate_head_hook(layer, head):
     def hook(value, hook):
-        print(f"Ablating head {head} in layer {layer}")
+        print(f"Ablating head {head} in layer {layer}, shape: {value.shape}")
         value[:, :, head, :] = 0  # zero-out the specific head
         return value
     return hook
@@ -43,6 +43,8 @@ for example in data:
     prompt = template.render(system=system_prompt, user_input=task_prompt)
     tokens = model.to_tokens(prompt)
 
+    print("\n".join(model.hook_dict.keys()))
+
     hooks = [
         (f'blocks.{layer}.attn.hook_z', ablate_head_hook(layer, head))
         for layer, head in heads_to_ablate
@@ -64,6 +66,7 @@ for example in data:
         'full_answer': generated_text
     }
     answers.append(answer)
+    break
 
 output_path = 'results/' + args.model + '_' + args.version + '_' + args.task + '_' + args.type + "_" + str(inp_length) + '.jsonl'
 with jsonlines.open(output_path, mode='w') as writer:
