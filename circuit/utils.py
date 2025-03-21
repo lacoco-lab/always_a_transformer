@@ -28,7 +28,7 @@ def combine_params(args):
     elif args.task == 'after' and version == 'non-instruct':
         task_path = 'templates/ind_after_completion.jinja'
         
-    data_path = '../datasets/100/flipflop_inductionhead/data.jsonl'
+    data_path = '../datasets/' + str(args.length) + '/flipflop_inductionhead/data.jsonl'
     ablation_type = args.type
         
     return model, task_path, version, data_path, ablation_type

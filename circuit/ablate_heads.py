@@ -17,6 +17,7 @@ parser.add_argument("-v", "--version", dest="version", help="instruct or non-ins
 
 parser.add_argument("-t", "--task", dest="task", help="induction before or after")
 parser.add_argument("-tp", "--type", dest="type", help="ablate induction or anti-induction")
+parser.add_argument("-l", "--length", dest="length", help="choose input length: 20, 30, 50, 100")
 args = parser.parse_args()
 model_name, task_path, version, data_path, ablation_type = combine_params(args)
 
@@ -24,11 +25,16 @@ model = HookedTransformer.from_pretrained(model_name)
 data = get_data(data_path)[:100]
 inp_length  = len(data[0]['input'])
 
+
 template_str = "{{ system }} {{ user_input }}"
 system_path = 'templates/system.jinja'
 template = Template(template_str)
 heads_to_ablate = load_heads(model_name, ablation_type)
-print(heads_to_ablate)
+print(f"Loaded model: {model_name}")
+print(f"Loaded input data from: {data_path}")
+print(f"Chosen task: {task_path}")
+print(f"Chosen ablation type: {ablation_type}")
+print(f"Heads to ablate: {heads_to_ablate}")
 
 answers = []
 for example in data:
