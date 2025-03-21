@@ -6,5 +6,4 @@ conda activate len-gen
 
 cd /scratch/yanav/repos/len-gen/circuit/
 
-python ablate_heads.py -m llama -v non-instruct -t before -tp induction
 python ablate_heads.py -m llama -v non-instruct -t after -tp induction
