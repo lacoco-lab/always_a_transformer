@@ -64,7 +64,7 @@ model.cfg.use_attn_result = True  # to use hook_result
 data = get_data(data_path)[:100]
 inp_length = len(data[0]['input'])
 
-template_str = "{{ system }} {{ user_input }}"
+template_str = "System: {{ system }} User: {{ user_input }}"
 system_path = 'templates/system.jinja'
 template = Template(template_str)
 heads_to_ablate = load_heads(model_name, ablation_type)
