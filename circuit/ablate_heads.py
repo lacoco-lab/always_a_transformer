@@ -14,60 +14,71 @@ def ablate_head_hook(layer, head):
     return hook
 
 
+def check_logits_for_next_token(model: HookedTransformer, tokens, topk: int = 5):
+    """
+    Prints the top-k next-token candidates by logit score, given the current tokens.
+    """
+    # Run a forward pass, returning logits of shape [batch=1, seq_len, vocab_size]
+    logits = model(tokens, return_type='logits')
+
+    # Select logits for the last position in the sequence
+    next_token_logits = logits[0, -1, :]  # shape: [vocab_size]
+
+    # Get the top-k token indices and logit values
+    topk_values, topk_indices = next_token_logits.topk(topk)
+
+    print("\nTop next-token candidates (logits):")
+    for val, idx in zip(topk_values, topk_indices):
+        # Convert the token ID back to text
+        token_str = model.to_string(idx.unsqueeze(0))
+        print(f"  Token: {repr(token_str)} | Logit: {float(val):.4f}")
+    print()
+
+
 parser = ArgumentParser()
-parser.add_argument("-m", "--model", dest="model", help="choose model")
+parser.add_argument("-m", "--model", dest="model",
+                    help="choose model")
 parser.add_argument("-v", "--version", dest="version", help="instruct or non-instruct model version")
 parser.add_argument("-t", "--task", dest="task", help="induction before or after")
 parser.add_argument("-tp", "--type", dest="type", help="ablate induction or anti-induction")
 parser.add_argument("-l", "--length", dest="length", help="choose input length: 20, 30, 50, 100")
 args = parser.parse_args()
+
 model_name, task_path, version, data_path, ablation_type = combine_params(args)
 
-# Load model
 model = HookedTransformer.from_pretrained(model_name)
-model.cfg.use_attn_result = True  # to use hook_result
-
-# Load data
 data = get_data(data_path)[:100]
 inp_length = len(data[0]['input'])
+model.cfg.use_attn_result = True  # to use hook_result
 
-# Prepare template
 template_str = "{{ system }} {{ user_input }}"
-template = Template(template_str)
 system_path = 'templates/system.jinja'
-
-# Load which heads to ablate
+template = Template(template_str)
 heads_to_ablate = load_heads(model_name, ablation_type)
+
 print(f"Loaded model: {model_name}")
 print(f"Loaded input data from: {data_path}")
 print(f"Chosen task: {task_path}")
 print(f"Chosen ablation type: {ablation_type}")
 print(f"Heads to ablate: {heads_to_ablate}")
 
-# You can define a BOS token the model recognizes, or a placeholder if none is defined
-BOS_TOKEN = "<|BOS|>"  # or e.g. model.tokenizer.bos_token if available
-
 answers = []
 for example in data:
-    # Render system prompt and user prompt
-    system_prompt, task_prompt = render_prompt(system_path, task_path, input_string=example['input'])
-
-    # Create the final prompt string, explicitly adding a BOS token up front
+    system_prompt, task_prompt = render_prompt(system_path, task_path, example['input'])
     prompt = template.render(system=system_prompt, user_input=task_prompt)
-    prompt_with_bos = f"{BOS_TOKEN} {prompt}"
-    print(prompt_with_bos)
+    tokens = model.to_tokens(prompt)
 
-    # Convert to tokens
-    tokens = model.to_tokens(prompt_with_bos)
-
-    # Build the ablation hooks
+    # Build ablation hooks
     hooks = [
         (f'blocks.{layer}.attn.hook_result', ablate_head_hook(layer, head))
         for layer, head in heads_to_ablate
     ]
 
-    # Generate tokens with ablation
+    # Show top-5 next-token candidates before generation
     with model.hooks(fwd_hooks=hooks):
+        check_logits_for_next_token(model, tokens, topk=5)
+
+        # Generate tokens
         if args.version == 'non-instruct':
             max_new = 2
         elif args.version == 'instruct':
@@ -80,7 +91,7 @@ for example in data:
             temperature=0
         )
 
-    # Collect the newly-generated tokens (after the prompt)
+    # Extract newly generated tokens & convert back to text
     new_tokens = generated_tokens[0, tokens.shape[-1]:]
     generated_text = model.to_string(new_tokens)
 
@@ -91,7 +102,6 @@ for example in data:
     }
     answers.append(answer)
 
-# Write results
 output_path = (
         'results/'
         + args.model + '_'
