@@ -21,19 +21,24 @@ def generate_repeated_random_tokens(model, batch=1000, seq_len=50, seed=0):
 #     DETECT INDUCTION HEADS   #
 # ----------------------------- #
 def find_random_induction_heads(model, batch=100, seq_len=50, seed=0):
+    # Generate repeated random tokens
     rep_tokens = generate_repeated_random_tokens(model, batch, seq_len, seed)
-    prompts = [model.tokenizer.decode(toks.tolist()) for toks in rep_tokens]
 
+    # Tokenize the prompts
+    tokenized_prompts = model.to_tokens([model.tokenizer.decode(toks.tolist()) for toks in rep_tokens])
+
+    # Detect induction heads
     head_scores = detect_head(
         model,
-        prompts=prompts,
+        tokenized_prompts,
         task="induction_head",
         exclude_bos=False,
         exclude_current_token=False,
         error_measure="abs"
     )
 
-    results = dict()
+    # Format results
+    results = {}
     for layer, layer_scores in enumerate(head_scores):
         for head, score in enumerate(layer_scores):
             results[f'{layer}.{head}'] = score.item()
