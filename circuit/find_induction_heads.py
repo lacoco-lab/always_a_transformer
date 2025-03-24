@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from transformer_lens import HookedTransformer
-from transformer_lens.utils import set_seed, get_act_name
+from transformer_lens.utils import get_act_name
 from transformer_lens.head_detector import detect_head
 import os
 from argparse import ArgumentParser
@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 #       CUSTOM GENERATOR       #
 # ----------------------------- #
 def generate_repeated_random_tokens(model, batch=1000, seq_len=50, seed=0):
-    set_seed(seed)
+    #set_seed(seed)
     prefix = (torch.ones(batch, 1) * model.tokenizer.bos_token_id).long()
     rep_tokens_half = torch.randint(0, model.cfg.d_vocab, (batch, seq_len), dtype=torch.int64)
     rep_tokens = torch.cat([prefix, rep_tokens_half, rep_tokens_half], dim=-1).to(model.cfg.device)
