@@ -50,7 +50,7 @@ BOS_TOKEN = "<|BOS|>"  # or e.g. model.tokenizer.bos_token if available
 answers = []
 for example in data:
     # Render system prompt and user prompt
-    system_prompt, task_prompt = render_prompt(system_path, task_path, example['input'])
+    system_prompt, task_prompt = render_prompt(system_path, task_path, input_string=example['input'])
 
     # Create the final prompt string, explicitly adding a BOS token up front
     prompt = template.render(system=system_prompt, user_input=task_prompt)
@@ -77,7 +77,7 @@ for example in data:
             tokens,
             max_new_tokens=max_new,
             stop_at_eos=True,
-            temperature=0.5
+            temperature=0
         )
 
     # Collect the newly-generated tokens (after the prompt)
