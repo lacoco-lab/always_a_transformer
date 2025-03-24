@@ -10,7 +10,7 @@ from banks.registries import DirectoryPromptRegistry
 from utils.vllm_openai_server import batch_complete, wait_for_engine_to_start
 from utils.utils import save_to_jsonl, get_first_write_index
 
-INFERENCE_PARAMS = {"max_tokens": 2, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+INFERENCE_PARAMS = {"max_tokens": 16, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
                     "extra_body": {"top_k": -1}}
 
 
@@ -40,6 +40,10 @@ def get_op_num_tokens(ip_path):
         op_num_tokens = 2000
     elif '100' in ip_path:
         op_num_tokens = 100
+    elif '50' in ip_path:
+        op_num_tokens = 50
+    elif '20' in ip_path:
+        op_num_tokens = 20
     return op_num_tokens
 
 
