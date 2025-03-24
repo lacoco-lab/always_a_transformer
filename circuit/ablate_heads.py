@@ -22,6 +22,27 @@ def ablate_head_hook(layer, head):
         return value
     return hook
 
+
+def check_logits_for_next_token(model: HookedTransformer, tokens, topk: int = 5):
+    """
+    Prints the top-k next-token candidates by logit score, given the current tokens.
+    """
+    # Run a forward pass, returning logits of shape [batch=1, seq_len, vocab_size]
+    logits = model(tokens, return_type='logits')
+
+    # Select logits for the last position in the sequence
+    next_token_logits = logits[0, -1, :]  # shape: [vocab_size]
+
+    # Get the top-k token indices and logit values
+    topk_values, topk_indices = next_token_logits.topk(topk)
+
+    print("\nTop next-token candidates (logits):")
+    for val, idx in zip(topk_values, topk_indices):
+        # Convert the token ID back to text
+        token_str = model.to_string(idx.unsqueeze(0))
+        print(f"  Token: {repr(token_str)} | Logit: {float(val):.4f}")
+    print()
+
 parser = ArgumentParser()
 parser.add_argument("-m", "--model", dest="model", help="choose model")
 parser.add_argument("-v", "--version", dest="version", help="instruct or non-instruct model version")
@@ -29,7 +50,7 @@ parser.add_argument("-t", "--task", dest="task", help="induction before or after
 parser.add_argument("-tp", "--type", dest="type", help="ablate induction or anti-induction")
 parser.add_argument("-l", "--length", dest="length", help="choose input length: 20, 30, 50, 100")
 parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-parser.add_argument("--top_k", type=int, default=10, help="Top-k sampling parameter")
+parser.add_argument("--top_k", type=int, default=1, help="Top-k sampling parameter")
 
 args = parser.parse_args()
 model_name, task_path, version, data_path, ablation_type = combine_params(args)
@@ -68,6 +89,7 @@ for example in data:
     ]
 
     with model.hooks(fwd_hooks=hooks):
+        check_logits_for_next_token(model, tokens, args.top_k)
         if args.version == 'non-instruct':
             max_new = 2
         elif args.version == 'instruct':
@@ -78,7 +100,7 @@ for example in data:
             tokens,
             max_new_tokens=max_new,
             stop_at_eos=True,
-            do_sample=True,
+            do_sample=False,
             top_k=args.top_k,
             temperature=0,  # adjust as desired
         )
