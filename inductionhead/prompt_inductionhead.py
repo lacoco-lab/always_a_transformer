@@ -13,7 +13,7 @@ from utils.utils import save_to_jsonl, get_first_write_index
 # INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
 #                              "extra_body": {"top_k": -1}}
 
-LCTX_INFERENCE_PARAMS = {"max_tokens": 5000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+LCTX_INFERENCE_PARAMS = {"max_tokens": 128, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
                           "extra_body": {"top_k": -1}}
 
 SCTX_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
@@ -43,6 +43,10 @@ def get_op_num_tokens(ip_path):
         op_num_tokens = 2000
     elif '100' in ip_path:
         op_num_tokens = 100
+    elif '50' in ip_path:
+        op_num_tokens = 50
+    elif '20' in ip_path:
+        op_num_tokens = 20
     return op_num_tokens
 
 
