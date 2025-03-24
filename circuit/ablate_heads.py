@@ -1,3 +1,4 @@
+import torch
 from jinja2 import Template
 from transformer_lens import HookedTransformer
 from argparse import ArgumentParser
@@ -14,42 +15,29 @@ def ablate_head_hook(layer, head):
     return hook
 
 
-def check_logits_for_next_token(model: HookedTransformer, tokens, topk: int = 5):
-    """
-    Prints the top-k next-token candidates by logit score, given the current tokens.
-    """
-    # Run a forward pass, returning logits of shape [batch=1, seq_len, vocab_size]
-    logits = model(tokens, return_type='logits')
-
-    # Select logits for the last position in the sequence
-    next_token_logits = logits[0, -1, :]  # shape: [vocab_size]
-
-    # Get the top-k token indices and logit values
-    topk_values, topk_indices = next_token_logits.topk(topk)
-
-    print("\nTop next-token candidates (logits):")
-    for val, idx in zip(topk_values, topk_indices):
-        # Convert the token ID back to text
-        token_str = model.to_string(idx.unsqueeze(0))
-        print(f"  Token: {repr(token_str)} | Logit: {float(val):.4f}")
-    print()
-
-
 parser = ArgumentParser()
-parser.add_argument("-m", "--model", dest="model",
-                    help="choose model")
+parser.add_argument("-m", "--model", dest="model", help="choose model")
 parser.add_argument("-v", "--version", dest="version", help="instruct or non-instruct model version")
 parser.add_argument("-t", "--task", dest="task", help="induction before or after")
 parser.add_argument("-tp", "--type", dest="type", help="ablate induction or anti-induction")
 parser.add_argument("-l", "--length", dest="length", help="choose input length: 20, 30, 50, 100")
-args = parser.parse_args()
 
+# Add new arguments for seed and top_k
+parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
+parser.add_argument("--top_k", type=int, default=1, help="Top-k sampling parameter")
+
+args = parser.parse_args()
 model_name, task_path, version, data_path, ablation_type = combine_params(args)
 
+# Initialize the random generator with a manual seed
+device = "cuda" if torch.cuda.is_available() else "cpu"
+generator = torch.Generator(device=device).manual_seed(args.seed)
+
 model = HookedTransformer.from_pretrained(model_name)
+model.cfg.use_attn_result = True  # to use hook_result
+
 data = get_data(data_path)[:100]
 inp_length = len(data[0]['input'])
-model.cfg.use_attn_result = True  # to use hook_result
 
 template_str = "{{ system }} {{ user_input }}"
 system_path = 'templates/system.jinja'
@@ -61,6 +49,7 @@ print(f"Loaded input data from: {data_path}")
 print(f"Chosen task: {task_path}")
 print(f"Chosen ablation type: {ablation_type}")
 print(f"Heads to ablate: {heads_to_ablate}")
+print(f"Random seed: {args.seed}, top_k: {args.top_k}")
 
 answers = []
 for example in data:
@@ -68,30 +57,30 @@ for example in data:
     prompt = template.render(system=system_prompt, user_input=task_prompt)
     tokens = model.to_tokens(prompt)
 
-    # Build ablation hooks
+    # Set up ablation hooks
     hooks = [
         (f'blocks.{layer}.attn.hook_result', ablate_head_hook(layer, head))
         for layer, head in heads_to_ablate
     ]
 
-    # Show top-5 next-token candidates before generation
     with model.hooks(fwd_hooks=hooks):
-        check_logits_for_next_token(model, tokens, topk=5)
-
-        # Generate tokens
+        # Decide how many tokens to generate
         if args.version == 'non-instruct':
             max_new = 2
         elif args.version == 'instruct':
             max_new = 5000
 
+        # Use top-k sampling, do_sample=True, and pass the torch.Generator
         generated_tokens = model.generate(
             tokens,
             max_new_tokens=max_new,
             stop_at_eos=True,
-            temperature=0
+            do_sample=True,  # enable sampling
+            top_k=args.top_k,  # your chosen top-k
+            temperature=0,  # you can adjust temperature as needed
+            generator=generator  # ensures reproducibility
         )
 
-    # Extract newly generated tokens & convert back to text
     new_tokens = generated_tokens[0, tokens.shape[-1]:]
     generated_text = model.to_string(new_tokens)
 
