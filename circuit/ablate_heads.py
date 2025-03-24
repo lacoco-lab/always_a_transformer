@@ -55,6 +55,7 @@ for example in data:
     # Create the final prompt string, explicitly adding a BOS token up front
     prompt = template.render(system=system_prompt, user_input=task_prompt)
     prompt_with_bos = f"{BOS_TOKEN} {prompt}"
+    print(prompt_with_bos)
 
     # Convert to tokens
     tokens = model.to_tokens(prompt_with_bos)
@@ -76,7 +77,7 @@ for example in data:
             tokens,
             max_new_tokens=max_new,
             stop_at_eos=True,
-            temperature=0
+            temperature=0.5
         )
 
     # Collect the newly-generated tokens (after the prompt)
