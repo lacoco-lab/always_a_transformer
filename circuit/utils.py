@@ -59,7 +59,7 @@ def load_heads(model, type):
         for layer in heads_json:
             for head in heads_json[layer]:
                 heads.append((int(layer), int(head)))
-    return heads
+    return []
         
 
 
