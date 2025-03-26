@@ -30,9 +30,11 @@ model.eval()
 device = "cuda" if torch.cuda.is_available() else "mps"
 model.to(device)
 
+
 def generate_synthetic_sequence(vocab_size=model.tokenizer.vocab_size, seq_len=50):
     random_tokens = torch.randint(0, vocab_size, (seq_len,))
     return torch.cat([random_tokens, random_tokens])
+
 
 def calculate_induction_score(head, layer, num_samples=1000):
     total_score = 0
@@ -78,6 +80,7 @@ for idx in top_indices:
     head = idx % model.cfg.n_heads
     print(f"Layer {layer} Head {head}: {flat_scores[idx]:.4f}")
 
+
 def plot_attention_map(layer, head, seq_len=50):
     tokens = generate_synthetic_sequence(seq_len=seq_len)
     _, cache = model.run_with_cache(
@@ -103,6 +106,7 @@ def plot_attention_map(layer, head, seq_len=50):
     plt.savefig(path)
     plt.close()
     print(f"Saved {filename}")
+
 
 for idx in top_indices:
     layer = idx // model.cfg.n_heads
