@@ -15,9 +15,15 @@ args = parser.parse_args()
 if args.model == 'llama3.1-8b-instruct':
     model = "meta-llama/Meta-Llama-3-8B-Instruct"
     version = 'instruct'
-else:
+elif args.model == 'llama3.1-8b':
     model = "meta-llama/Meta-Llama-3-8B"
     version = 'non-instruct'
+elif args.model == 'gemma-9b':
+    model = 'google/gemma-2-9b'
+    version = 'non-instruct'
+elif args.model == 'gemma-9b-instruct':
+    model = 'unsloth/gemma-2-9b-it'
+    version = 'instruct'
 
 model = HookedTransformer.from_pretrained(model)
 model.eval()
@@ -58,7 +64,7 @@ induction_scores = np.zeros((model.cfg.n_layers, model.cfg.n_heads))
 
 for layer in range(model.cfg.n_layers):
     for head in range(model.cfg.n_heads):
-        score = calculate_induction_score(head, layer, num_samples=100)
+        score = calculate_induction_score(head, layer)
         induction_scores[layer, head] = score
         print(f"Layer {layer} Head {head}: {score:.4f}")
 
@@ -91,9 +97,9 @@ def plot_attention_map(layer, head, seq_len=50):
     filename = f"attention_map_layer{layer}_head{head}.png"
     
     if version == 'instruct': 
-        path = "pythia_1b_instruct_aih/" + filename
+        path = "gemma_2_9b_it_ih/" + filename
     else:
-        path = "pythia_1b_aih/" + filename
+        path = "gemma_2_9b_aih/" + filename
     plt.savefig(path)
     plt.close()
     print(f"Saved {filename}")
