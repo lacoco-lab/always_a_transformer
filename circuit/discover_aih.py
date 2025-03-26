@@ -97,7 +97,7 @@ def plot_attention_map(layer, head, seq_len=50):
     filename = f"attention_map_layer{layer}_head{head}.png"
     
     if version == 'instruct': 
-        path = "gemma_2_9b_it_ih/" + filename
+        path = "gemma_2_9b_it_aih/" + filename
     else:
         path = "gemma_2_9b_aih/" + filename
     plt.savefig(path)
