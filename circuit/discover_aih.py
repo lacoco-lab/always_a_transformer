@@ -22,7 +22,7 @@ elif args.model == 'gemma-9b':
     model = 'google/gemma-2-9b'
     version = 'non-instruct'
 elif args.model == 'gemma-9b-instruct':
-    model = 'unsloth/gemma-2-9b-it'
+    model = 'google/gemma-2-9b-it'
     version = 'instruct'
 
 model = HookedTransformer.from_pretrained(model)
