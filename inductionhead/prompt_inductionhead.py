@@ -79,7 +79,11 @@ if __name__ == "__main__":
     data, inductionheads = [], []
     with jsonlines.open(args.ip_path, "r") as reader:
         for obj in reader:
-            obj["input"] = obj["input"].strip()
+            rev_ip = obj["input"].strip()
+            rev_ip = rev_ip.replace("0", "z")
+            rev_ip = rev_ip.replace("1", "0")
+            rev_ip = rev_ip.replace("z", "1")
+            obj["input"] = rev_ip
             data.append(obj)
             inductionheads.append(obj["input"])
 

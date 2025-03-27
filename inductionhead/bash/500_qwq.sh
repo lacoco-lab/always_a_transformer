@@ -39,7 +39,7 @@ mkdir -p ~/.config/vllm && touch ~/.config/vllm/do_not_track
 #sleep 5
 
 # For Meta-Llama-3-8B-Instruct
-
+#
 #CUDA_VISIBLE_DEVICES=0 vllm serve meta-llama/Meta-Llama-3-8B-Instruct --tensor-parallel-size 1 --gpu-memory-utilization 0.85 --disable-log-stats --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 256 --max-num-seqs 64 --max-num-batched-tokens 32000 --no-enable-prefix-caching &
 #
 #VLLMPID=$!
@@ -50,16 +50,16 @@ mkdir -p ~/.config/vllm && touch ~/.config/vllm/do_not_track
 ##python inductionhead/prompt_inductionhead.py --ip_path datasets/100/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "after"
 ##python inductionhead/prompt_inductionhead.py --ip_path datasets/100/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "after"
 #
-#python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "before"
+#python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B-Instruct --port $PORT --config "before"
 ##python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "before"
 #
-#python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "after"
+#python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B-Instruct --port $PORT --config "after"
 ##python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "after"
 #
-#python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "before"
+#python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B-Instruct --port $PORT --config "before"
 ##python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "before"
 #
-#python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "after"
+#python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B-Instruct --port $PORT --config "after"
 ##python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/Meta-Llama-3-8B-Instruct --port $PORT --config "after"
 #
 #kill $VLLMPID
@@ -72,16 +72,16 @@ CUDA_VISIBLE_DEVICES=0,1 vllm serve google/gemma-2-9b-it --tensor-parallel-size 
 
 VLLMPID=$!
 
-python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "before"
+python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "before"
 #python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "before"
 
-python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "after"
+python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "after"
 #python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "after"
 
-python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "before"
+python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "before"
 #python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "before"
 
-python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "after"
+python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "after"
 #python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "after"
 
 kill $VLLMPID
