@@ -14,18 +14,27 @@ args = parser.parse_args()
 if args.model == 'llama3.1-8b-instruct':
     model = "meta-llama/Meta-Llama-3-8B-Instruct"
     version = 'instruct'
-else:
+elif args.model == 'llama3.1-8b':
     model = "meta-llama/Meta-Llama-3-8B"
     version = 'non-instruct'
+elif args.model == 'gemma-9b':
+    model = 'google/gemma-2-9b'
+    version = 'non-instruct'
+elif args.model == 'gemma-9b-instruct':
+    model = 'google/gemma-2-9b-it'
+    version = 'instruct'
+
 
 model = HookedTransformer.from_pretrained(model)
 model.eval()
 device = "cuda" if torch.cuda.is_available() else "mps"
 model.to(device)
 
+
 def generate_synthetic_sequence(vocab_size=model.tokenizer.vocab_size, seq_len=50):
     random_tokens = torch.randint(0, vocab_size, (seq_len,))
     return torch.cat([random_tokens, random_tokens])
+
 
 def calculate_induction_score(head, layer, num_samples=1000):
     total_score = 0
@@ -52,13 +61,16 @@ def calculate_induction_score(head, layer, num_samples=1000):
 
     return total_score / num_samples 
 
+
 induction_scores = np.zeros((model.cfg.n_layers, model.cfg.n_heads))
+
 
 for layer in range(model.cfg.n_layers):
     for head in range(model.cfg.n_heads):
-        score = calculate_induction_score(head, layer, num_samples=100)
+        score = calculate_induction_score(head, layer)
         induction_scores[layer, head] = score
         print(f"Layer {layer} Head {head}: {score:.4f}")
+
 
 flat_scores = induction_scores.flatten()
 top_k = 10  
@@ -69,6 +81,7 @@ for idx in top_indices:
     layer = idx // model.cfg.n_heads
     head = idx % model.cfg.n_heads
     print(f"Layer {layer} Head {head}: {flat_scores[idx]:.4f}")
+
 
 def plot_attention_map(layer, head, seq_len=50):
     tokens = generate_synthetic_sequence(seq_len=seq_len)
@@ -88,12 +101,13 @@ def plot_attention_map(layer, head, seq_len=50):
     plt.colorbar()
     filename = f"attention_map_layer{layer}_head{head}.png"
     if version == 'instruct':
-        path = "pythia_1b_instruct_ih/" + filename
+        path = "gemma_2_9b_it_ih/" + filename
     else:
-        path = "pythia_1b_ih/" + filename
+        path = "gemma_2_9b_ih/" + filename
     plt.savefig(path)
     plt.close()
     print(f"Saved {filename}")
+
 
 for idx in top_indices:
     layer = idx // model.cfg.n_heads
