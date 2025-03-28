@@ -36,7 +36,7 @@ def generate_synthetic_sequence(vocab_size=model.tokenizer.vocab_size, seq_len=5
     return torch.cat([random_tokens, random_tokens])
 
 
-def calculate_induction_score(head, layer, num_samples=1000):
+def calculate_induction_score(head, layer, num_samples=100):
     total_score = 0
     seq_len = 50
 
