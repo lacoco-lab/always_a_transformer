@@ -18,6 +18,12 @@ def combine_params(args):
     elif args.model == 'pythia':
         model = 'EleutherAI/pythia-1.4b-deduped'
         version = 'non-instruct'
+    elif args.model == 'gemma' and args.version == 'instruct':
+        model = "google/gemma-2-9b-it"
+        version = 'instruct'
+    elif args.model == 'gemma' and args.version != 'instruct':
+        model = "google/gemma-2-9b"
+        version = 'non-instruct'
         
     if args.task == 'before' and version == 'instruct':
         task_path = 'templates/ind_before_chat.jinja'

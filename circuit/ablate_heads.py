@@ -95,7 +95,6 @@ for example in data:
         elif args.version == 'instruct':
             max_new = 5000
 
-        # Use top-k sampling and do_sample=True, but remove the 'generator=' argument
         generated_tokens = model.generate(
             tokens,
             max_new_tokens=max_new,

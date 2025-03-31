@@ -52,7 +52,10 @@ def clean_results(results):
     :return: arr 
     """
     for line in results:
-        line['answer'] = line['answer'][0]
+        try:
+            line['answer'] = line['answer'][0]
+        except IndexError:
+            line['answer'] = None
     return results
 
 
@@ -69,13 +72,9 @@ def get_accuracy(results):
     return (correct / len(results)) * 100
 
 
-llama_after = clean_results(get_data("flipflop_inductionhead/Meta-Llama-3-8B/inductionhead_zero-shot_completion_v0/100_after_seed-5.jsonl"))
-llama_before = clean_results(get_data("flipflop_inductionhead/Meta-Llama-3-8B/inductionhead_zero-shot_completion_v0/100_before_seed-5.jsonl"))
-llama_before_instruct = get_data('flipflop_inductionhead/Meta-Llama-3-8B-Instruct/inductionhead_zero-shot_chat_v0/100_before_nocot_seed-5.jsonl')
-llama_after_instruct = get_data('flipflop_inductionhead/Meta-Llama-3-8B-Instruct/inductionhead_zero-shot_chat_v0/100_after_nocot_seed-5.jsonl')
+llama_after = clean_results(get_data("flipflop_inductionhead_rev_digit/Meta-Llama-3-8B-Instruct/inductionhead_zero-shot_chat_v0/20_after_seed-5.jsonl"))
+llama_before = clean_results(get_data("flipflop_inductionhead_rev_digit/Meta-Llama-3-8B-Instruct/inductionhead_zero-shot_chat_v0/20_before_seed-5.jsonl"))
 
 
-print(f'Accuracy Non-Instruct Llama After: {get_accuracy(llama_after)}')
-print(f'Accuracy Non-Instruct Llama Before: {get_accuracy(llama_before)}')
-print(f'Accuracy Instruct Llama After: {get_accuracy(llama_after_instruct)}')
-print(f'Accuracy Instruct Llama Before: {get_accuracy(llama_before_instruct)}')
+print(f'Accuracy Instruct Llama After: {get_accuracy(llama_after)}')
+print(f'Accuracy Instruct Llama Before: {get_accuracy(llama_before)}')
