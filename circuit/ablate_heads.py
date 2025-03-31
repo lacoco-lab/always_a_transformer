@@ -68,6 +68,7 @@ template_str = "System: {{ system }} User: {{ user_input }}"
 system_path = 'templates/system.jinja'
 template = Template(template_str)
 heads_to_ablate = load_heads(model_name, ablation_type)
+print(f'Loaded {len(heads_to_ablate)} heads to ablate.')
 
 print(f"Loaded model: {model_name}")
 print(f"Loaded input data from: {data_path}")
