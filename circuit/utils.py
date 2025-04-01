@@ -29,9 +29,9 @@ def combine_params(args):
         task_path = 'templates/ind_before_chat.jinja'
     elif args.task == 'after' and version == 'instruct':
         task_path = 'templates/ind_after_chat.jinja'
-    elif args.task == 'before' and version == 'non-instruct':
+    elif args.task == 'before' and version != 'instruct':
         task_path = 'templates/ind_before_completion.jinja'
-    elif args.task == 'after' and version == 'non-instruct':
+    elif args.task == 'after' and version != 'instruct':
         task_path = 'templates/ind_after_completion.jinja'
         
     data_path = '../datasets/' + str(args.length) + '/flipflop_inductionhead/data.jsonl'

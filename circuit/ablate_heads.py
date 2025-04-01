@@ -15,30 +15,27 @@ def set_global_seed(seed: int):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
 
-def ablate_head_hook(layer, head):
+def ablate_head_hook(layer: int, head_index: int):
     def hook(value, hook):
-        print(f"Ablating head {head} in layer {layer}, shape: {value.shape}")
-        value[:, :, head, :] = 0  # zero-out the specific head
+        before_mean = value[:, :, head_index, :].mean().item()
+        value[:, :, head_index, :] = 0.
+        after_mean = value[:, :, head_index, :].mean().item()
+        print(f"Layer {layer}, Head {head_index}: Mean before ablation = {before_mean:.4f}, after = {after_mean:.4f}. Tensore shape: {value.shape}")
         return value
     return hook
-
 
 def check_logits_for_next_token(model: HookedTransformer, tokens, topk: int = 5):
     """
     Prints the top-k next-token candidates by logit score, given the current tokens.
     """
-    # Run a forward pass, returning logits of shape [batch=1, seq_len, vocab_size]
     logits = model(tokens, return_type='logits')
 
-    # Select logits for the last position in the sequence
     next_token_logits = logits[0, -1, :]  # shape: [vocab_size]
 
-    # Get the top-k token indices and logit values
     topk_values, topk_indices = next_token_logits.topk(topk)
 
     print("\nTop next-token candidates (logits):")
     for val, idx in zip(topk_values, topk_indices):
-        # Convert the token ID back to text
         token_str = model.to_string(idx.unsqueeze(0))
         print(f"  Token: {repr(token_str)} | Logit: {float(val):.4f}")
     print()
@@ -50,7 +47,7 @@ parser.add_argument("-t", "--task", dest="task", help="induction before or after
 parser.add_argument("-tp", "--type", dest="type", help="ablate induction or anti-induction")
 parser.add_argument("-l", "--length", dest="length", help="choose input length: 20, 30, 50, 100")
 parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-parser.add_argument("--top_k", type=int, default=1, help="Top-k sampling parameter")
+parser.add_argument("--top_k", type=int, default=5, help="Top-k sampling parameter")
 
 args = parser.parse_args()
 model_name, task_path, version, data_path, ablation_type = combine_params(args)
@@ -59,7 +56,7 @@ model_name, task_path, version, data_path, ablation_type = combine_params(args)
 set_global_seed(args.seed)
 
 model = HookedTransformer.from_pretrained(model_name)
-model.cfg.use_attn_result = True  # to use hook_result
+model.cfg.use_cache = False
 
 data = get_data(data_path)[:100]
 inp_length = len(data[0]['input'])
@@ -78,31 +75,40 @@ print(f"Random seed: {args.seed}, top_k: {args.top_k}")
 
 answers = []
 for example in data:
+    if args.version == 'non-instruct':
+        max_new = 2
+    elif args.version == 'instruct':
+        max_new = 5000
+
     system_prompt, task_prompt = render_prompt(system_path, task_path, example['input'])
     prompt = template.render(system=system_prompt, user_input=task_prompt)
     tokens = model.to_tokens(prompt)
+    check_logits_for_next_token(model, tokens, args.top_k)
 
-    # Build ablation hooks
     hooks = [
-        (f'blocks.{layer}.attn.hook_result', ablate_head_hook(layer, head))
+        (f'blocks.{layer}.attn.hook_z', ablate_head_hook(layer, head))
         for layer, head in heads_to_ablate
     ]
 
-    with model.hooks(fwd_hooks=hooks):
-        check_logits_for_next_token(model, tokens, args.top_k)
-        if args.version == 'non-instruct':
-            max_new = 2
-        elif args.version == 'instruct':
-            max_new = 5000
+    original_loss = model(tokens, return_type="loss")
+    ablated_loss = model.run_with_hooks(
+        tokens, 
+        return_type="loss", 
+        fwd_hooks=hooks
+    )
 
+    print(f"Original Loss: {original_loss.item():.3f}")
+    print(f"Ablated Loss: {ablated_loss.item():.3f}")
+
+    with model.hooks(fwd_hooks=hooks):
         generated_tokens = model.generate(
-            tokens,
-            max_new_tokens=max_new,
-            stop_at_eos=True,
-            do_sample=False,
-            top_k=args.top_k,
-            temperature=0,  # adjust as desired
-        )
+                tokens,
+                max_new_tokens=max_new,
+                stop_at_eos=True,
+                do_sample=False,
+                top_k=args.top_k,
+                temperature=0, 
+            )
 
     new_tokens = generated_tokens[0, tokens.shape[-1]:]
     generated_text = model.to_string(new_tokens)

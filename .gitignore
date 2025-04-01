@@ -8,3 +8,4 @@ olmo_indexer/es_config.yml
 results/majority/**
 results/loremipsum/llama3.3_70B-instruct/zero-shot_chat_v0/5000_exact_seed-5.jsonl
 results/loremipsum/llama3.3_70B-instruct/zero-shot_chat_v0/5000_verbatim_seed-5.jsonl
+.vscode
