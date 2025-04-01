@@ -40,7 +40,8 @@ def clean_results(results):
     :return: arr 
     """
     for line in results:
-        line['answer'] = line['full_answer'][0]
+        #line['answer'] = line['full_answer'][0]
+        line['answer'] = extract_answer(line)
     return results
 
 
@@ -60,9 +61,13 @@ def get_accuracy(results):
 #llama_after_anti = clean_results(get_data("results/llama_non-instruct_after_random-all_100.jsonl"))
 #llama_before_anti = clean_results(get_data("results/llama_non-instruct_before_anti-induction.jsonl"))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 llama_after = clean_results(get_data("llama_non-instruct_after_induction_20.jsonl"))
 =======
 llama_after = clean_results(get_data("results/llama_non-instruct_after_random-all_20.jsonl"))
+>>>>>>> Stashed changes
+=======
+llama_after = clean_results(get_data("results/gemma_instruct_after_induction_20.jsonl"))
 >>>>>>> Stashed changes
 #llama_before = clean_results(get_data("results/llama_non-instruct_before_induction.jsonl"))
 
@@ -75,7 +80,7 @@ prop_zero, prop_one = count_distribution(llama_after)
 print(f"Proportions in data:\n0: {prop_zero} for {len(llama_after)} samples.\n1: {prop_one} for {len(llama_after)} samples.\n=========")
 
 #print(f"Accuracy Non-Instruct Llama Induction-After pruned Anti-Induction: {get_accuracy(llama_after_anti)}")
-print(f"Accuracy Non-Instruct Llama Induction-After: {get_accuracy(llama_after)}")
+print(f"Accuracy Induction-After: {get_accuracy(llama_after)}")
 #print(f"Accuracy Non-Instruct Llama Induction-Before pruned Anti-Induction: {get_accuracy(llama_before_anti)}")
 #print(f"Accuracy Non-Instruct Llama Induction-Before pruned Induction: {get_accuracy(llama_before)}")
 print("========")
