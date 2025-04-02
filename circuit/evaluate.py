@@ -42,8 +42,8 @@ def clean_results(results):
     :return: arr 
     """
     for line in results:
-        #line['answer'] = line['full_answer'][0]
-        line['answer'] = extract_answer(line)
+        line['answer'] = line['full_answer'][0]
+        #line['answer'] = extract_answer(line)
     return results
 
 
@@ -62,7 +62,7 @@ def get_accuracy(results):
 
 #llama_after_anti = clean_results(get_data("results/llama_non-instruct_after_random-all_100.jsonl"))
 #llama_before_anti = clean_results(get_data("results/llama_non-instruct_before_anti-induction.jsonl"))
-llama_after = clean_results(get_data("results/gemma_instruct_after_induction_20.jsonl"))
+llama_after = clean_results(get_data("results/llama_non-instruct_after_random-mid_20.jsonl"))
 #llama_before = clean_results(get_data("results/llama_non-instruct_before_induction.jsonl"))
 
 #llama_instruct_after_anti = [extract_answer(ans) for ans in clean_results(get_data("results/llama_instruct_after_anti-induction.jsonl"))]
