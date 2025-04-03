@@ -36,8 +36,9 @@ def combine_params(args):
         
     data_path = '../datasets/' + str(args.length) + '/flipflop_inductionhead/data.jsonl'
     ablation_type = args.type
+    num_top_heads = args.num_top_heads
         
-    return model, task_path, version, data_path, ablation_type
+    return model, task_path, version, data_path, ablation_type, num_top_heads
 
 
 def get_data(path):

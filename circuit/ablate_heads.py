@@ -55,12 +55,10 @@ parser.add_argument("--top_k", type=int, default=5, help="Top-k sampling paramet
 args = parser.parse_args()
 model_name, task_path, version, data_path, ablation_type = combine_params(args)
 
-# Set the global seed
 set_global_seed(args.seed)
 
 model = HookedTransformer.from_pretrained(model_name)
 model.cfg.use_cache = False
-tokenizer = model.tokenizer
 
 data = get_data(data_path)[:100]
 inp_length = len(data[0]['input'])
@@ -90,13 +88,6 @@ for example in data:
     system_prompt, task_prompt = render_prompt(system_path, task_path, example['input'])
     prompt = template.render(system=system_prompt, user_input=task_prompt)
     tokens = model.to_tokens(prompt)
-    w_token_id = tokenizer.encode('w', add_special_tokens=False)[0]
-    
-    try:
-        w_indices = [i for i, x in enumerate(tokens[0]) if x == w_token_id]
-    except ValueError:
-        print(f"Token 'w' not found in the input: {tokens[0]}")
-        continue
 
     hooks = [
         (f'blocks.{layer}.attn.hook_z', ablate_head_hook(layer, head))
@@ -110,56 +101,38 @@ for example in data:
         fwd_hooks=hooks
     )
 
-    #print(f"Original Loss: {original_loss.item():.3f}")
-    #print(f"Ablated Loss: {ablated_loss.item():.3f}")
-
-    _, cache = model.run_with_cache(
-            tokens,
-            names_filter=lambda name: "attn" in name,
-            return_type=None
-        )
-
-    for layer in range(model.cfg.n_layers):
-        for head in range(model.cfg.n_heads):
-            attn_patterns = cache[get_act_name("attn", layer)]
-            head_patterns = attn_patterns[:, head, :, :]
-            if (layer, head) in attention_scores.keys():
-                attention_scores[(layer, head)] += head_patterns[0, w_indices[1], w_indices[0]].item()
-            else:
-                attention_scores[(layer, head)] = head_patterns[0, w_indices[1], w_indices[0]].item()
+    print(f"Original Loss: {original_loss.item():.3f}")
+    print(f"Ablated Loss: {ablated_loss.item():.3f}")
 
     
-    # with model.hooks(fwd_hooks=hooks):
-    #     generated_tokens = model.generate(
-    #             tokens,
-    #             max_new_tokens=max_new,
-    #             stop_at_eos=True,
-    #             do_sample=False,
-    #             top_k=args.top_k,
-    #             temperature=0, 
-    #         )
+    with model.hooks(fwd_hooks=hooks):
+        generated_tokens = model.generate(
+                tokens,
+                max_new_tokens=max_new,
+                stop_at_eos=True,
+                do_sample=False,
+                top_k=args.top_k,
+                temperature=0, 
+            )
 
-    # new_tokens = generated_tokens[0, tokens.shape[-1]:]
-    # generated_text = model.to_string(new_tokens)
+    new_tokens = generated_tokens[0, tokens.shape[-1]:]
+    generated_text = model.to_string(new_tokens)
 
-    # answer = {
-    #     'input': example['input'],
-    #     'gold_ans_char': get_gold_ans(example['input'], args.task),
-    #     'full_answer': generated_text
-    # }
-    # answers.append(answer)
-sorted_attention_heads = sorted(attention_scores.items(), key=lambda x: x[1], reverse=True)[:10]
-for (layer, head), score in sorted_attention_heads:
-    print(f"Attention for Layer {layer}, Head {head} with score {score:.4f}")
+    answer = {
+        'input': example['input'],
+        'gold_ans_char': get_gold_ans(example['input'], args.task),
+        'full_answer': generated_text
+    }
+    answers.append(answer)
 
-# output_path = (
-#     'results/'
-#     + args.model + '_'
-#     + args.version + '_'
-#     + args.task + '_'
-#     + args.type + "_"
-#     + str(inp_length)
-#     + '.jsonl'
-# )
-# with jsonlines.open(output_path, mode='w') as writer:
-#     writer.write_all(answers)
+output_path = (
+    'results/'
+    + args.model + '_'
+    + args.version + '_'
+    + args.task + '_'
+    + args.type + "_"
+    + str(inp_length)
+    + '.jsonl'
+)
+with jsonlines.open(output_path, mode='w') as writer:
+    writer.write_all(answers)
