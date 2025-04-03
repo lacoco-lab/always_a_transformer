@@ -14,7 +14,7 @@ args = parser.parse_args()
 if args.model == 'llama3.1-8b-instruct':
     model = "meta-llama/Meta-Llama-3-8B-Instruct"
     version = 'instruct'
-    out_path = 'llama_8b'
+    out_path = 'llama_8b_instruct'
 elif args.model == 'llama3.1-8b':
     model = "meta-llama/Meta-Llama-3-8B"
     version = 'non-instruct'
@@ -26,7 +26,7 @@ elif args.model == 'gemma-9b':
 elif args.model == 'gemma-9b-instruct':
     model = 'google/gemma-2-9b-it'
     version = 'instruct'
-    out_path = 'gemma_2_9b'
+    out_path = 'gemma_2_9b_it'
 
 
 model = HookedTransformer.from_pretrained(model)
