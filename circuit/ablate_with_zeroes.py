@@ -56,7 +56,7 @@ args = parser.parse_args()
 model_name, task_path, version, data_path, ablation_type = combine_params(args)
 
 set_global_seed(args.seed)
-
+#local_files_only=True
 model = HookedTransformer.from_pretrained(model_name)
 model.cfg.use_cache = False
 
@@ -131,7 +131,8 @@ output_path = (
     + args.version + '_'
     + args.task + '_'
     + args.type + "_"
-    + str(inp_length)
+    + str(inp_length) +  "_"
+    + "with_zero"
     + '.jsonl'
 )
 with jsonlines.open(output_path, mode='w') as writer:

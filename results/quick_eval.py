@@ -72,8 +72,8 @@ def get_accuracy(results):
     return (correct / len(results)) * 100
 
 
-llama_after = clean_results(get_data("flipflop_inductionhead_rev_digit/Meta-Llama-3-8B-Instruct/inductionhead_zero-shot_chat_v0/20_after_seed-5.jsonl"))
-llama_before = clean_results(get_data("flipflop_inductionhead_rev_digit/Meta-Llama-3-8B-Instruct/inductionhead_zero-shot_chat_v0/20_before_seed-5.jsonl"))
+llama_after = clean_results(get_data("flipflop_inductionhead/gemma-2-9b-it/inductionhead_zero-shot_chat_v0/500_after_replaced_digit_seed-5.jsonl"))
+llama_before = clean_results(get_data("flipflop_inductionhead/gemma-2-9b-it/inductionhead_zero-shot_chat_v0/500_before_replaced_digit_seed-5.jsonl"))
 
 
 print(f'Accuracy Instruct Llama After: {get_accuracy(llama_after)}')

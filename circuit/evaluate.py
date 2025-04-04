@@ -1,5 +1,6 @@
-from utils import get_data
 import re
+import os
+import json
 
 
 def extract_answer(ans):
@@ -59,26 +60,26 @@ def get_accuracy(results):
             correct += 1
     return (correct / len(results)) * 100
 
+def load_files(folder_path):
+    all_data = []
 
-#llama_after_anti = clean_results(get_data("results/llama_non-instruct_after_random-all_100.jsonl"))
-#llama_before_anti = clean_results(get_data("results/llama_non-instruct_before_anti-induction.jsonl"))
-llama_after = clean_results(get_data("results/llama_non-instruct_after_random-mid_20.jsonl"))
-#llama_before = clean_results(get_data("results/llama_non-instruct_before_induction.jsonl"))
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.jsonl'):
+            file_path = os.path.join(folder_path, filename)
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = [json.loads(line) for line in f if line.strip()]
+            obj = {'filename': filename, 'data': data}
+            all_data.append(obj)
 
-#llama_instruct_after_anti = [extract_answer(ans) for ans in clean_results(get_data("results/llama_instruct_after_anti-induction.jsonl"))]
-#llama_instruct_before_anti = [extract_answer(ans) for ans in clean_results(get_data("results/llama_instruct_before_anti-induction.jsonl"))]
-#llama_instruct_after = [extract_answer(ans) for ans in clean_results(get_data("results/llama_instruct_after_induction.jsonl"))]
-#llama_instruct_before = [extract_answer(ans) for ans in clean_results(get_data("results/llama_instruct_before_induction.jsonl"))]
+    return all_data
 
-prop_zero, prop_one = count_distribution(llama_after)
-print(f"Proportions in data:\n0: {prop_zero} for {len(llama_after)} samples.\n1: {prop_one} for {len(llama_after)} samples.\n=========")
+folder_path = 'results'
+data = load_files(folder_path)
+print(f"Loaded {len(data)} records from all jsonl files.")
 
-#print(f"Accuracy Non-Instruct Llama Induction-After pruned Anti-Induction: {get_accuracy(llama_after_anti)}")
-print(f"Accuracy Induction-After: {get_accuracy(llama_after)}")
-#print(f"Accuracy Non-Instruct Llama Induction-Before pruned Anti-Induction: {get_accuracy(llama_before_anti)}")
-#print(f"Accuracy Non-Instruct Llama Induction-Before pruned Induction: {get_accuracy(llama_before)}")
-print("========")
-#print(f"Accuracy Instruct Llama Induction-After pruned Anti-Induction: {get_accuracy(llama_instruct_after_anti)}")
-#print(f"Accuracy Instruct Llama Induction-After pruned Induction: {get_accuracy(llama_instruct_after)}")
-#print(f"Accuracy Instruct Llama Induction-Before pruned Anti-Induction: {get_accuracy(llama_instruct_before_anti)}")
-#print(f"Accuracy Instruct Llama Induction-Before pruned Induction: {get_accuracy(llama_instruct_before)}")
+for record in data:
+    cleaned_results = clean_results(record['data'])
+    distrs = count_distribution(cleaned_results)
+    print(f'Accuracy for {record['filename']} is {get_accuracy(cleaned_results)}%')
+    print(f'Count distrubution for file {record['filename']} is:\n0 - {distrs[0]}%, 1 - {distrs[1]}%')
+    print(f'============================')

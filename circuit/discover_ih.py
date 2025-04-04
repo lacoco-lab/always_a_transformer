@@ -77,7 +77,7 @@ for layer in range(model.cfg.n_layers):
 
 
 flat_scores = induction_scores.flatten()
-top_k = 20  
+top_k = 13
 top_indices = np.argpartition(flat_scores, -top_k)[-top_k:]
 
 print("\nTop induction heads:")

@@ -10,11 +10,6 @@ from utils import combine_params, get_data, load_heads, render_prompt, get_gold_
 import matplotlib.pyplot as plt
 import os
 
-"""
-It would be nice if I cached activations just once, saved them in the file and reused.
-This is a bit ugly code for now.
-"""
-
 def set_global_seed(seed: int):
     """Set all relevant random seeds for reproducibility."""
     random.seed(seed)
@@ -50,8 +45,7 @@ model_name, task_path, version, data_path, ablation_type = combine_params(args)
 
 set_global_seed(args.seed)
 
-#local_files_only=True
-model = HookedTransformer.from_pretrained(model_name)
+model = HookedTransformer.from_pretrained(model_name, local_files_only=True)
 model.cfg.use_cache = False
 
 data = get_data(data_path)[:100]
@@ -142,7 +136,7 @@ output_path = (
     + args.task + '_'
     + args.type + "_"
     + str(inp_length) + "_"
-    + "with_mean"
+    + "with_corrupted"
     + '.jsonl'
 )
 with jsonlines.open(output_path, mode='w') as writer:

@@ -32,7 +32,7 @@ model_name, task_path, version, data_path, ablation_type = combine_params(args)
 
 set_global_seed(args.seed)
 
-model = HookedTransformer.from_pretrained(model_name)
+model = HookedTransformer.from_pretrained(model_name, local_files_only=True)
 model.cfg.use_cache = False
 tokenizer = model.tokenizer
 
@@ -85,7 +85,7 @@ for example in data:
             else:
                 attention_scores[(layer, head)] = head_patterns[0, w_indices[1], w_indices[0]+1].item()
 
-sorted_attention_heads = sorted(attention_scores.items(), key=lambda x: x[1], reverse=True)[:20]
+sorted_attention_heads = sorted(attention_scores.items(), key=lambda x: x[1], reverse=True)[:13]
 for (layer, head), score in sorted_attention_heads:
     print(f"Attention for Layer {layer}, Head {head} with score {score:.4f}")
 
