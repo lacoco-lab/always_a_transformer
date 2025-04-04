@@ -71,21 +71,33 @@ if __name__ == "__main__":
     ap.add_argument("--save_path", type=str, nargs='?', default="results/last_ones/llama3.3_70B-instruct",
                     help="Dir Path to save results in jsonlines")
     ap.add_argument("--port", type=str, required=False, default="8080", help="Port to use for the server")
-    ap.add_argument("--config", type=str, required=False, default="before", choices=["before", "after"],
+    ap.add_argument("--config", type=str, required=False, default="before", 
+                    choices=["before", "after", "before_replaced_digit", "after_replaced_digit"],
                     help="before or after")
     args = ap.parse_args()
 
     # read jsonl file
     data, inductionheads = [], []
-    with jsonlines.open(args.ip_path, "r") as reader:
-        for obj in reader:
-            rev_ip = obj["input"].strip()
-            rev_ip = rev_ip.replace("0", "z")
-            rev_ip = rev_ip.replace("1", "0")
-            rev_ip = rev_ip.replace("z", "1")
-            obj["input"] = rev_ip
-            data.append(obj)
-            inductionheads.append(obj["input"])
+    if ".txt" in args.ip_path:
+        # Convert txt to jsonl
+        with open(args.ip_path, "r") as f:
+            lines = f.readlines()
+        for line in lines:
+            line = line.strip()
+            if line:
+                inductionheads.append(line)
+                obj = {"input": line}
+                data.append(obj)
+    else:    
+        with jsonlines.open(args.ip_path, "r") as reader:
+            for obj in reader:
+                # rev_ip = obj["input"].strip()
+                # rev_ip = rev_ip.replace("0", "z")
+                # rev_ip = rev_ip.replace("1", "0")
+                # rev_ip = rev_ip.replace("z", "1")
+                # obj["input"] = rev_ip
+                data.append(obj)
+                inductionheads.append(obj["input"])
 
     cot = "nocot" if "nocot" == args.cot else "cot"
 

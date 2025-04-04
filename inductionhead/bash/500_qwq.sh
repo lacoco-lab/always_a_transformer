@@ -68,21 +68,35 @@ mkdir -p ~/.config/vllm && touch ~/.config/vllm/do_not_track
 
 # For google/gemma-2-9b-it
 
+#CUDA_VISIBLE_DEVICES=0,1 vllm serve google/gemma-2-9b-it --tensor-parallel-size 2 --gpu-memory-utilization 0.85 --disable-log-stats --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 512 --max-num-seqs 64 --max-num-batched-tokens 32000 --no-enable-prefix-caching &
+#
+#VLLMPID=$!
+#
+#python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config 'before_replaced_digit'
+##python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "before"
+#
+#python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config 'before_replaced_digit'
+##python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "after"
+#
+#python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "before"
+##python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "before"
+#
+#python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "after"
+##python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "after"
+#
+#kill $VLLMPID
+#
+#sleep 5
+
 CUDA_VISIBLE_DEVICES=0,1 vllm serve google/gemma-2-9b-it --tensor-parallel-size 2 --gpu-memory-utilization 0.85 --disable-log-stats --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 512 --max-num-seqs 64 --max-num-batched-tokens 32000 --no-enable-prefix-caching &
 
 VLLMPID=$!
 
-python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "before"
+python inductionhead/prompt_inductionhead.py --ip_path datasets/inductionhead_replaced_digits/data.txt --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config 'before_replaced_digit'
 #python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "before"
 
-python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "after"
+python inductionhead/prompt_inductionhead.py --ip_path datasets/inductionhead_replaced_digits/data.txt --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config 'after_replaced_digit'
 #python inductionhead/prompt_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "after"
-
-python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "before"
-#python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "before"
-
-python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "nocot" --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b-it --port $PORT --config "after"
-#python inductionhead/prompt_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_chat_v0 --cot "cot" --save_path results/flipflop_inductionhead/gemma-2-9b-it --port $PORT --config "after"
 
 kill $VLLMPID
 

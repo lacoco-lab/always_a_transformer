@@ -61,32 +61,32 @@ mkdir -p ~/.config/vllm && touch ~/.config/vllm/do_not_track
 #kill $VLLMPID
 
 #
-#CUDA_VISIBLE_DEVICES=0 vllm serve meta-llama/Meta-Llama-3-8B --tensor-parallel-size 1 --gpu-memory-utilization 0.85 --disable-log-stats --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 64 --max-num-seqs 64 --max-num-batched-tokens 8000 --max-model-len 1024 --no-enable-prefix-caching &
-#
-#VLLMPID=$!
-#
-#python inductionhead/complete_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'before' --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B --port $PORT
-#python inductionhead/complete_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'after' --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B --port $PORT
-#
-#python inductionhead/complete_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'before' --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B --port $PORT
-#python inductionhead/complete_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'after' --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B --port $PORT
-#
-#kill $VLLMPID
-#
-#sleep 5
-
-# For google/gemma-2-9b
-
-CUDA_VISIBLE_DEVICES=0 vllm serve google/gemma-2-9b --tensor-parallel-size 1 --gpu-memory-utilization 0.90 --disable-log-stats --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 64 --max-num-seqs 64 --max-num-batched-tokens 16000 --max-model-len 1024 --no-enable-prefix-caching &
+CUDA_VISIBLE_DEVICES=0,1 vllm serve meta-llama/Meta-Llama-3-8B --tensor-parallel-size 2 --gpu-memory-utilization 0.85 --disable-log-stats --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 64 --max-num-seqs 64 --max-num-batched-tokens 8000 --max-model-len 1024 --no-enable-prefix-caching &
 
 VLLMPID=$!
 
-python inductionhead/complete_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'before' --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b --port $PORT
-python inductionhead/complete_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'after' --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b --port $PORT
+python inductionhead/complete_inductionhead.py --ip_path datasets/inductionhead_replaced_digits/data.txt --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'before_replaced_digit' --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B --port $PORT
+python inductionhead/complete_inductionhead.py --ip_path datasets/inductionhead_replaced_digits/data.txt --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'after_replaced_digit' --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B --port $PORT
 
-python inductionhead/complete_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'before' --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b --port $PORT
-python inductionhead/complete_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'after' --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b --port $PORT
+#python inductionhead/complete_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'before' --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B --port $PORT
+#python inductionhead/complete_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'after' --save_path results/flipflop_inductionhead_rev_digit/Meta-Llama-3-8B --port $PORT
 
 kill $VLLMPID
 
 sleep 5
+
+# For google/gemma-2-9b
+
+#CUDA_VISIBLE_DEVICES=0 vllm serve google/gemma-2-9b --tensor-parallel-size 1 --gpu-memory-utilization 0.90 --disable-log-stats --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 64 --max-num-seqs 64 --max-num-batched-tokens 16000 --max-model-len 1024 --no-enable-prefix-caching &
+#
+#VLLMPID=$!
+#
+#python inductionhead/complete_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'before' --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b --port $PORT
+#python inductionhead/complete_inductionhead.py --ip_path datasets/50/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'after' --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b --port $PORT
+#
+#python inductionhead/complete_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'before' --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b --port $PORT
+#python inductionhead/complete_inductionhead.py --ip_path datasets/20/flipflop_inductionhead/data.jsonl --prompt_path prompts/flipflop_inductionhead/inductionhead_zero-shot_completion_v0 --config 'after' --save_path results/flipflop_inductionhead_rev_digit/gemma-2-9b --port $PORT
+#
+#kill $VLLMPID
+#
+#sleep 5
