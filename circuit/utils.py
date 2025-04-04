@@ -18,14 +18,20 @@ def combine_params(args):
     elif args.model == 'pythia':
         model = 'EleutherAI/pythia-1.4b-deduped'
         version = 'non-instruct'
+    elif args.model == 'gemma' and args.version == 'instruct':
+        model = "google/gemma-2-9b-it"
+        version = 'instruct'
+    elif args.model == 'gemma' and args.version != 'instruct':
+        model = "google/gemma-2-9b"
+        version = 'non-instruct'
         
     if args.task == 'before' and version == 'instruct':
         task_path = 'templates/ind_before_chat.jinja'
     elif args.task == 'after' and version == 'instruct':
         task_path = 'templates/ind_after_chat.jinja'
-    elif args.task == 'before' and version == 'non-instruct':
+    elif args.task == 'before' and version != 'instruct':
         task_path = 'templates/ind_before_completion.jinja'
-    elif args.task == 'after' and version == 'non-instruct':
+    elif args.task == 'after' and version != 'instruct':
         task_path = 'templates/ind_after_completion.jinja'
         
     data_path = '../datasets/' + str(args.length) + '/flipflop_inductionhead/data.jsonl'
@@ -59,7 +65,7 @@ def load_heads(model, type):
         for layer in heads_json:
             for head in heads_json[layer]:
                 heads.append((int(layer), int(head)))
-    return []
+    return heads
         
 
 

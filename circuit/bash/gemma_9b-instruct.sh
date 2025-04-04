@@ -6,5 +6,4 @@ conda activate len-gen
 
 cd /scratch/yanav/repos/len-gen/circuit/
 
-python discover_aih.py -m gemma-9b-instruct
 python discover_ih.py -m gemma-9b-instruct

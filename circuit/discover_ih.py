@@ -14,15 +14,19 @@ args = parser.parse_args()
 if args.model == 'llama3.1-8b-instruct':
     model = "meta-llama/Meta-Llama-3-8B-Instruct"
     version = 'instruct'
+    out_path = 'llama_8b_instruct'
 elif args.model == 'llama3.1-8b':
     model = "meta-llama/Meta-Llama-3-8B"
     version = 'non-instruct'
+    out_path = 'llama_8b'
 elif args.model == 'gemma-9b':
     model = 'google/gemma-2-9b'
     version = 'non-instruct'
+    out_path = 'gemma_2_9b'
 elif args.model == 'gemma-9b-instruct':
     model = 'google/gemma-2-9b-it'
     version = 'instruct'
+    out_path = 'gemma_2_9b_it'
 
 
 model = HookedTransformer.from_pretrained(model)
@@ -36,7 +40,7 @@ def generate_synthetic_sequence(vocab_size=model.tokenizer.vocab_size, seq_len=5
     return torch.cat([random_tokens, random_tokens])
 
 
-def calculate_induction_score(head, layer, num_samples=1000):
+def calculate_induction_score(head, layer, num_samples=100):
     total_score = 0
     seq_len = 50
 
@@ -73,7 +77,7 @@ for layer in range(model.cfg.n_layers):
 
 
 flat_scores = induction_scores.flatten()
-top_k = 10  
+top_k = 20  
 top_indices = np.argpartition(flat_scores, -top_k)[-top_k:]
 
 print("\nTop induction heads:")
@@ -101,9 +105,9 @@ def plot_attention_map(layer, head, seq_len=50):
     plt.colorbar()
     filename = f"attention_map_layer{layer}_head{head}.png"
     if version == 'instruct':
-        path = "gemma_2_9b_it_ih/" + filename
+        path = out_path + "_ih/" + filename
     else:
-        path = "gemma_2_9b_ih/" + filename
+        path = out_path + "_ih/" + filename
     plt.savefig(path)
     plt.close()
     print(f"Saved {filename}")
