@@ -15,7 +15,7 @@ def extract_answer(ans):
         extracted = match.group(1)
         return extracted
     else:
-        print(f'No answer tag found.')
+        #print(f'No answer tag found.')
         return None
 
 
@@ -43,8 +43,8 @@ def clean_results(results):
     :return: arr 
     """
     for line in results:
-        line['answer'] = line['full_answer'][0]
-        #line['answer'] = extract_answer(line)
+        #line['answer'] = line['full_answer'][0]
+        line['answer'] = extract_answer(line)
     return results
 
 
@@ -78,8 +78,9 @@ data = load_files(folder_path)
 print(f"Loaded {len(data)} records from all jsonl files.")
 
 for record in data:
-    cleaned_results = clean_results(record['data'])
-    distrs = count_distribution(cleaned_results)
-    print(f'Accuracy for {record['filename']} is {get_accuracy(cleaned_results)}%')
-    print(f'Count distrubution for file {record['filename']} is:\n0 - {distrs[0]}%, 1 - {distrs[1]}%')
-    print(f'============================')
+    if 'gemma' in record['filename']:
+        cleaned_results = clean_results(record['data'])
+        distrs = count_distribution(cleaned_results)
+        print(f'Accuracy for {record['filename']} is {get_accuracy(cleaned_results)}%')
+        #print(f'Count distrubution for file {record['filename']} is:\n0 - {distrs[0]}%, 1 - {distrs[1]}%')
+        print(f'============================')

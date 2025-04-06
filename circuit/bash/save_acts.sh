@@ -6,7 +6,7 @@ conda activate len-gen
 
 cd /scratch/yanav/repos/len-gen/circuit/
 
-python save_acts.py -m llama -v non-instruct -t after -tp none -l 20
-python save_acts.py -m llama -v non-instruct -t after -tp none -l 50
-python save_acts.py -m gemma -v instruct -t after -tp none -l 20
-python save_acts.py -m gemma -v instruct -t after -tp none -l 50
+python save_acts.py -m llama -v non-instruct -t after -l 20 -d corrupted
+python save_acts.py -m llama -v non-instruct -t after -l 50 -d corrupted
+python save_acts.py -m gemma -v instruct -t after -l 20 -d corrupted
+python save_acts.py -m gemma -v instruct -t after -l 50 -d corrupted

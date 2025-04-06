@@ -99,7 +99,7 @@ for example in data:
     if args.version == 'non-instruct':
         max_new = 2
     elif args.version == 'instruct':
-        max_new = 5000
+        max_new = 1000
 
     system_prompt, task_prompt = render_prompt(system_path, task_path, example['input'])
     prompt = template.render(system=system_prompt, user_input=task_prompt)
