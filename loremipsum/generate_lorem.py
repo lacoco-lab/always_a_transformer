@@ -1,8 +1,9 @@
 import json
 import random
+
 import lorem
 from typing import List, Dict, Any, Optional
-from dataclasses import dataclass, field
+
 
 class LoremIpsumGenerator:
     """
@@ -239,26 +240,3 @@ class LoremIpsumGenerator:
         
         return presets.get(preset_name, {})
 
-
-def main():
-    """Example usage of the LoremIpsumGenerator class."""
-    from hf_olmo import OLMoTokenizerFast
-    
-    # Load the tokenizer
-    tokenizer = OLMoTokenizerFast.from_pretrained("allenai/OLMo-7B-Instruct")
-    
-    # Create generator with the 4000 tokens preset
-    generator = LoremIpsumGenerator(
-        tokenizer=tokenizer,
-        output_file="datasets/500/loremipsum/data_4000_tokens.jsonl",
-        tokenizer_name="olmo",
-        **LoremIpsumGenerator.get_config_preset("4000_tokens")
-    )
-    
-    # Generate all variations
-    variations = generator.generate_all_variations()
-    print(f"Generated {len(variations)} unique variations")
-
-
-if __name__ == "__main__":
-    main()

@@ -13,10 +13,10 @@ from utils.utils import save_to_jsonl, get_first_write_index
 # INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
 #                              "extra_body": {"top_k": -1}}
 
-LLAMA_INFERENCE_PARAMS = {"max_tokens": 16000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+LCTX_INFERENCE_PARAMS = {"max_tokens": 128, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
                           "extra_body": {"top_k": -1}}
 
-OLMO_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+SCTX_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
                          "extra_body": {"top_k": -1}}
 
 
@@ -29,6 +29,25 @@ def parse_last_ones_response(response_text):
         print(f"Error in parsing response: {response_text}")
         answer = response_text
     return answer
+
+
+def get_op_num_tokens(ip_path):
+    op_num_tokens = 500
+    if "3000" in ip_path:
+        op_num_tokens = 3000
+    elif "4000" in ip_path:
+        op_num_tokens = 4000
+    elif "5000" in ip_path:
+        op_num_tokens = 5000
+    elif "bigger" in ip_path:
+        op_num_tokens = 2000
+    elif '100' in ip_path:
+        op_num_tokens = 100
+    elif '50' in ip_path:
+        op_num_tokens = 50
+    elif '20' in ip_path:
+        op_num_tokens = 20
+    return op_num_tokens
 
 
 def merge_data_with_responses(data, responses, task="before"):
@@ -52,17 +71,33 @@ if __name__ == "__main__":
     ap.add_argument("--save_path", type=str, nargs='?', default="results/last_ones/llama3.3_70B-instruct",
                     help="Dir Path to save results in jsonlines")
     ap.add_argument("--port", type=str, required=False, default="8080", help="Port to use for the server")
-    ap.add_argument("--config", type=str, required=False, default="before", choices=["before", "after"],
+    ap.add_argument("--config", type=str, required=False, default="before", 
+                    choices=["before", "after", "before_replaced_digit", "after_replaced_digit"],
                     help="before or after")
     args = ap.parse_args()
 
     # read jsonl file
     data, inductionheads = [], []
-    with jsonlines.open(args.ip_path, "r") as reader:
-        for obj in reader:
-            obj["input"] = obj["input"].strip()
-            data.append(obj)
-            inductionheads.append(obj["input"])
+    if ".txt" in args.ip_path:
+        # Convert txt to jsonl
+        with open(args.ip_path, "r") as f:
+            lines = f.readlines()
+        for line in lines:
+            line = line.strip()
+            if line:
+                inductionheads.append(line)
+                obj = {"input": line}
+                data.append(obj)
+    else:    
+        with jsonlines.open(args.ip_path, "r") as reader:
+            for obj in reader:
+                # rev_ip = obj["input"].strip()
+                # rev_ip = rev_ip.replace("0", "z")
+                # rev_ip = rev_ip.replace("1", "0")
+                # rev_ip = rev_ip.replace("z", "1")
+                # obj["input"] = rev_ip
+                data.append(obj)
+                inductionheads.append(obj["input"])
 
     cot = "nocot" if "nocot" == args.cot else "cot"
 
@@ -77,10 +112,10 @@ if __name__ == "__main__":
 
     wait_for_engine_to_start(base_url)
 
-    if "llama" in args.save_path.lower() or "mamba" in args.save_path.lower():
-        inference_params = LLAMA_INFERENCE_PARAMS
+    if "llama" in args.save_path.lower() or "gemma" in args.save_path.lower() or "qwq" in args.save_path.lower():
+        inference_params = LCTX_INFERENCE_PARAMS
     elif "olmo" in args.save_path.lower():
-        inference_params = OLMO_INFERENCE_PARAMS
+        inference_params = SCTX_INFERENCE_PARAMS
     else:
         raise ValueError("Unknown model")
 
@@ -90,4 +125,5 @@ if __name__ == "__main__":
     results = merge_data_with_responses(data, results, task=args.config)
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
     # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
-    save_to_jsonl(str(save_path), f"500_{args.config}_{cot}_seed-{inference_params['seed']}.jsonl", results)
+    op_filename = f"{get_op_num_tokens(args.ip_path)}_{args.config}_seed-{inference_params['seed']}.jsonl"
+    save_to_jsonl(str(save_path), op_filename, results)

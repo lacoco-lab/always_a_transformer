@@ -10,14 +10,9 @@ from banks.registries import DirectoryPromptRegistry
 from utils.vllm_openai_server import batch_complete, wait_for_engine_to_start
 from utils.utils import save_to_jsonl, get_first_write_index
 
-# INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
-#                              "extra_body": {"top_k": -1}}
+INFERENCE_PARAMS = {"max_tokens": 16, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
+                    "extra_body": {"top_k": -1}}
 
-LLAMA_INFERENCE_PARAMS = {"max_tokens": 2, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
-                          "extra_body": {"top_k": -1}}
-
-OLMO_INFERENCE_PARAMS = {"max_tokens": 2, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
-                         "extra_body": {"top_k": -1}}
 
 
 def merge_data_with_responses(data, responses, task="before"):
@@ -33,6 +28,25 @@ def merge_data_with_responses(data, responses, task="before"):
     return data
 
 
+def get_op_num_tokens(ip_path):
+    op_num_tokens = 500
+    if "3000" in ip_path:
+        op_num_tokens = 3000
+    elif "4000" in ip_path:
+        op_num_tokens = 4000
+    elif "5000" in ip_path:
+        op_num_tokens = 5000
+    elif "bigger" in ip_path:
+        op_num_tokens = 2000
+    elif '100' in ip_path:
+        op_num_tokens = 100
+    elif '50' in ip_path:
+        op_num_tokens = 50
+    elif '20' in ip_path:
+        op_num_tokens = 20
+    return op_num_tokens
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--ip_path", type=str, required=True, help="Dir Path to the dataset")
@@ -40,17 +54,30 @@ if __name__ == "__main__":
     ap.add_argument("--save_path", type=str, nargs='?', default="results/last_ones/llama3.3_70B-instruct",
                     help="Dir Path to save results in jsonlines")
     ap.add_argument("--port", type=str, required=False, default="8080", help="Port to use for the server")
-    ap.add_argument("--config", type=str, required=False, default="before", choices=["before", "after"],
+    ap.add_argument("--config", type=str, required=False, default="before", 
+                    choices=["before", "after", "before_replaced_digit", "after_replaced_digit"],
                     help="before or after")
     args = ap.parse_args()
 
     # read jsonl file
     data, inductionheads = [], []
-    with jsonlines.open(args.ip_path, "r") as reader:
-        for obj in reader:
-            obj["input"] = obj["input"].strip()
-            data.append(obj)
-            inductionheads.append(obj["input"])
+    
+    if ".txt" in args.ip_path:
+        # Convert txt to jsonl
+        with open(args.ip_path, "r") as f:
+            lines = f.readlines()
+        for line in lines:
+            line = line.strip()
+            if line:
+                inductionheads.append(line)
+                obj = {"input": line}
+                data.append(obj)
+    else:
+        with jsonlines.open(args.ip_path, "r") as reader:
+            for obj in reader:
+                obj["input"] = obj["input"].strip()
+                data.append(obj)
+                inductionheads.append(obj["input"])
 
     registry = DirectoryPromptRegistry(Path(args.prompt_path), force_reindex=True)
     task_prompt = registry.get(name=f"task_{args.config}")
@@ -62,16 +89,12 @@ if __name__ == "__main__":
 
     wait_for_engine_to_start(base_url)
 
-    if "llama" in args.save_path.lower() or "mamba" in args.save_path.lower():
-        inference_params = LLAMA_INFERENCE_PARAMS
-    elif "olmo" in args.save_path.lower():
-        inference_params = OLMO_INFERENCE_PARAMS
-    else:
-        raise ValueError("Unknown model")
+    inference_params = INFERENCE_PARAMS
 
     client = openai.AsyncClient(base_url=base_url, api_key="sk_noreq", max_retries=10)
     results = batch_complete(inductionheads, client, task_prompt, inference_params=inference_params, batch_size=32)
     results = merge_data_with_responses(data, results, task=args.config)
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
-    # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
-    save_to_jsonl(str(save_path), f"500_{args.config}_seed-{inference_params['seed']}.jsonl", results)
+
+    op_filename = f"{get_op_num_tokens(args.ip_path)}_{args.config}_seed-{inference_params['seed']}.jsonl"
+    save_to_jsonl(str(save_path), op_filename, results)

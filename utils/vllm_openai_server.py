@@ -29,6 +29,7 @@ async def openai_vllm_chat(client, task_prompt, system_prompt, inference_params,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": task_prompt},
+            # {"role": "user", "content": system_prompt + '\n\n' + task_prompt},
         ],
         **inference_params,
         extra_headers={

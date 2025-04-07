@@ -19,6 +19,9 @@ LLAMA_INFERENCE_PARAMS = {"max_tokens": 4000, "temperature": 0, "logprobs": True
 OLMO_INFERENCE_PARAMS = {"max_tokens": 4000, "temperature": 0, "logprobs": True, "seed": 5,
                          "extra_body": {"top_k": -1}, "stop": ["<end>", "</start>"]}
 
+PYTHIA_INFERENCE_PARAMS = {"max_tokens": 200, "temperature": 0, "logprobs": True, "seed": 5,
+                           "extra_body": {"top_k": -1}}
+
 
 def parse_first_ones_response(response_text):
     try:
@@ -35,12 +38,26 @@ def merge_data_with_responses(data, responses):
     for r_idx, resp in enumerate(responses):
         d = data[r_idx]
         d["answer"] = resp.choices[0].text
-        d["is_correct"] = d["gold_ans"] == d["answer"].strip()
+        d["is_correct"] = d["gold_ans"] in d["answer"].strip()
         d["input_length"] = resp.usage.prompt_tokens
         d["output_length"] = resp.usage.completion_tokens
         d["tokenized_output"] = resp.choices[0].logprobs.tokens
     return data
 
+
+def get_op_num_tokens(ip_path):
+    op_num_tokens = 500
+    if "3000" in ip_path:
+        op_num_tokens = 3000
+    elif "4000" in ip_path:
+        op_num_tokens = 4000
+    elif "5000" in ip_path:
+        op_num_tokens = 5000
+    elif "bigger" in ip_path:
+        op_num_tokens = 2000
+    elif '100' in ip_path:
+        op_num_tokens = 100
+    return op_num_tokens
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -75,6 +92,8 @@ if __name__ == "__main__":
         inference_params = LLAMA_INFERENCE_PARAMS
     elif "olmo" in args.save_path.lower():
         inference_params = OLMO_INFERENCE_PARAMS
+    elif "pythia" in args.save_path.lower():
+        inference_params = PYTHIA_INFERENCE_PARAMS
     else:
         raise ValueError("Unknown model")
 
@@ -83,4 +102,5 @@ if __name__ == "__main__":
     results = merge_data_with_responses(data, results)
     save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
     # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
-    save_to_jsonl(str(save_path), f"500{'_bigger' if 'bigger' in args.ip_path else ''}_{args.config}_seed-{inference_params['seed']}.jsonl", results)
+    op_filename = f"{get_op_num_tokens(args.ip_path)}_{args.config}_seed-{inference_params['seed']}.jsonl"
+    save_to_jsonl(str(save_path), op_filename, results)

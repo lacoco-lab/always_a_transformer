@@ -38,27 +38,27 @@ mkdir -p ~/.config/vllm && touch ~/.config/vllm/do_not_track
 
 # For llama3.1_8B-instruct
 
-vllm serve meta-llama/Llama-3.1-8B-Instruct --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 32000 --max-num-batched-tokens 32000 &
-
-VLLMPID=$!
-
-python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/llama3.1_8B-instruct --port $PORT --config "exact"
-python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/llama3.1_8B-instruct --port $PORT --config "verbatim"
-
-kill $VLLMPID
-
-sleep 5
-
-# For OLMo_7B-instruct
-
-vllm serve /scratch/common_models/OLMo-7B-0724-Instruct-hf --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 4096 --max-num-batched-tokens 32000 &
-
-VLLMPID=$!
-
-python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/OLMo_7B-instruct --port $PORT --config "exact"
-python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/OLMo_7B-instruct --port $PORT --config "verbatim"
-
-kill $VLLMPID
+#vllm serve meta-llama/Llama-3.1-8B-Instruct --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 32000 --max-num-batched-tokens 32000 &
+#
+#VLLMPID=$!
+#
+#python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/llama3.1_8B-instruct --port $PORT --config "exact"
+#python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/llama3.1_8B-instruct --port $PORT --config "verbatim"
+#
+#kill $VLLMPID
+#
+#sleep 5
+#
+## For OLMo_7B-instruct
+#
+#vllm serve /scratch/common_models/OLMo-7B-0724-Instruct-hf --tensor-parallel-size 4 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 4096 --max-num-batched-tokens 32000 &
+#
+#VLLMPID=$!
+#
+#python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/OLMo_7B-instruct --port $PORT --config "exact"
+#python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/OLMo_7B-instruct --port $PORT --config "verbatim"
+#
+#kill $VLLMPID
 #
 #sleep 5
 #
@@ -107,3 +107,16 @@ kill $VLLMPID
 #python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data_bigger.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/OLMo_7B-instruct --port $PORT --config "reverse"
 #
 #kill $VLLMPID
+
+# For QwQ-32B
+
+#vllm serve /scratch/common_models/QwQ-32B --tensor-parallel-size 2 --gpu-memory-utilization 0.95 --disable-log-stats --seed 5 --api-key "sk_noreq" --host 0.0.0.0 --port $PORT --max-seq-len-to-capture 32000 --max-num-batched-tokens 256000 &
+#
+#VLLMPID=$!
+
+python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/QwQ-32B --port $PORT --config "exact"
+python loremipsum/prompt_lorem.py --ip_path datasets/500/loremipsum/data.jsonl --prompt_path prompts/loremipsum/zero-shot_chat_v0 --save_path results/loremipsum/QwQ-32B --port $PORT --config "verbatim"
+#
+#kill $VLLMPID
+#
+#sleep 5
