@@ -2,189 +2,241 @@ import json
 import random
 
 import lorem
-
-from transformers import AutoTokenizer
-
-# Load the tokenizer for the "allenai/OLMo-7B-Instruct" model
-tokenizer = AutoTokenizer.from_pretrained("allenai/OLMo-7B-0724-Instruct-hf")
-results_file = [
-        # "results/loremipsum/llama3.1_8B-instruct/zero-shot_chat_v0/500_exact_seed-5.jsonl",
-        # "/Users/yash/Desktop/Lacoco/len-gen/results/loremipsum/llama3.1_8B-instruct/zero-shot_chat_v0/500_verbatim_seed-5.jsonl",
-        # "/Users/yash/Desktop/Lacoco/len-gen/results/loremipsum/llama3.3_70B-instruct/zero-shot_chat_v0/500_exact_seed-5.jsonl",
-        # "/Users/yash/Desktop/Lacoco/len-gen/results/loremipsum/llama3.3_70B-instruct/zero-shot_chat_v0/500_verbatim_seed-5.jsonl",
-        "results/loremipsum/OLMo_7B-instruct/zero-shot_chat_v0/500_exact_seed-5.jsonl",
-        "results/loremipsum/OLMo_7B-instruct/zero-shot_chat_v0/500_verbatim_seed-5.jsonl"
-]
+from typing import List, Dict, Any, Optional
 
 
-# def calculate_tokens_per_task(results_file):
-#     with open(results_file, 'r') as jsonl_file:
-#         lines = jsonl_file.readlines()
-#         # For each lines, parse the string of the line as a dictionary
-#         # and sum the number of tokens in each line
-#         lines = [json.loads(line) for line in lines]
+class LoremIpsumGenerator:
+    """
+    A class to generate and manage lorem ipsum text variations with configurable properties.
+    """
+    
+    def __init__(
+        self, 
+        tokenizer,
+        output_file: str = "dataset.jsonl",
+        num_sentences: int = 200,
+        lorem_paragraphs: int = 5,
+        total_samples: int = 1500,
+        max_tokens: int = 2000,
+        duplicate_sentence_prob: float = 0.3,
+        duplicate_word_prob: float = 0.5,
+        shuffle_sentence_prob: float = 1.0,
+        duplicate_count: int = 4,
+        tokenizer_name: str = "default"
+    ):
+        """
+        Initialize the Lorem Ipsum generator with configurable parameters.
         
-#         # Verified with LLaMa 3.1 8B outputs, that outputs always start with the following :: output": ["<", "paragraph", ">\n"
-#         # "</", "paragraph", ">\n\n", "THE", "_END" OR "</", "paragraph", ">\n", "THE", "_END" ..
-#         correct = 0
-#         for line in lines:
-#             gold_ans = line["gold_ans"]
-#             full_answer = line["full_answer"]
-#             # full_answer.replace('\n', ' ')
-#             # Leave only characters and '.'s
-#             full_answer_ = ''.join(e for e in full_answer if e.isalnum())# or e == '.')
-#             gold_ans_ = ''.join(e for e in gold_ans if e.isalnum()) # or e == '.')
-#             if gold_ans_ in full_answer_:
-#                 correct += 1
-#             else:
-#                 print("Gold:", gold_ans)
-#                 print("Full:", full_answer)
-#                 break
-#                 # pass
-#         print("file", results_file, "Correct:", correct, "Total:", len(lines))
-
-#     counts_task = defaultdict(int)
-#     for sample_data in lines:
-#         # First 
-#         counts_task['first'] += 1
-#         counts_task['last'] += 1
-
-#         copied_tokens = sample_data['tokenized_output']
-#         # Get the tokens and the indices of those tokens, that only appear once in the copied_tokens list
-#         token_continuations = defaultdict(list)
-#         # Traverse till the last token, and get all possible next tokens.
-#         for index, token in enumerate(copied_tokens[:-1]):
-#             token_continuations[token].append(copied_tokens[index+1])
+        Args:
+            tokenizer: The tokenizer to use for counting tokens
+            output_file: Path to save the generated variations
+            num_sentences: Target number of sentences per variation
+            lorem_paragraphs: Number of lorem ipsum paragraphs to generate initially
+            total_samples: Total number of variations to generate
+            max_tokens: Maximum number of tokens allowed per variation
+            duplicate_sentence_prob: Probability of duplicating a sentence
+            duplicate_word_prob: Probability of duplicating words in a sentence
+            shuffle_sentence_prob: Probability of shuffling words in a sentence
+            duplicate_count: How many times to duplicate sentences/words
+            tokenizer_name: Name identifier for the tokenizer
+        """
+        self.tokenizer = tokenizer
+        self.output_file = output_file
+        self.num_sentences = num_sentences
+        self.lorem_paragraphs = lorem_paragraphs
+        self.total_samples = total_samples
+        self.max_tokens = max_tokens
+        self.duplicate_sentence_prob = duplicate_sentence_prob
+        self.duplicate_word_prob = duplicate_word_prob
+        self.shuffle_sentence_prob = shuffle_sentence_prob
+        self.duplicate_count = duplicate_count
+        self.tokenizer_name = tokenizer_name
         
-#         # Get the induction head token-value pairs
-#         for token, next_tokens in token_continuations.items():
-#             if len(next_tokens) == 1:
-#                 counts_task['induction_head'] += 1
-#                 print("IH : TOKEN -", token, "NEXT TOKEN -", next_tokens[0])
-#             elif len(next_tokens) > 1:
-#                 # If there are multiple next tokens, and they are different, then it's a flip-flop task
-#                 # Maybe, this needs to be changed, but let's go with this definition
-#                 # Can save the actual token by gettig [0], [-1] from the list `next_tokens`
-#                 # But it's not needed here, as the accuracy is 100% on copying. 
-#                 counts_task['flip_flop_last'] += 1
-#                 counts_task['flip_flop_first'] += 1
-#                 if len(set(next_tokens)) > 1:
-#                     counts_task['flip_flop_diff_last'] += 1
-#                     counts_task['flip_flop_diff_first'] += 1
-#                 print("FF : TOKEN -", token, "NEXT TOKEN -", next_tokens)
-#         break
-#     # The other symmteric tasks -- induction_left, flip_flop_last_left, flip_flop_first_left don't make sense here.
-#     print(counts_task)
-
-
-def add_new_variation(tokenizer, to_add_variation, max_tokens=2000):
-    num_tokens = len(tokenizer.encode(to_add_variation))
-
-    if num_tokens > max_tokens:
-        # Then take only the max_tokens number of tokens from added_text
-        to_add_variation = tokenizer.decode(tokenizer.encode(to_add_variation)[:max_tokens])
-        num_tokens = max_tokens
-
-    return {
-        "input": to_add_variation,
-        "olmo_num_tokens": num_tokens,
-    }    
-
-
-def generate_lorem_ipsum_variations(file_name, num_sentences=200, lorem_generate=5, total_samples=1500, max_tokens=2000):
-    variations = []
-    generated_lp, added_text = 0, []
-
-    while generated_lp < total_samples:
-        # Generate a basic lorem ipsum text
+        # Track generated variations
+        self.variations = []
+        self.unique_texts = set()
+        self.generated_count = 0
+        
+    def tokenize_and_truncate(self, text: str) -> Dict[str, Any]:
+        """
+        Tokenize text and truncate if it exceeds max_tokens.
+        
+        Args:
+            text: The text to tokenize and potentially truncate
+            
+        Returns:
+            Dictionary with input text and token count
+        """
+        num_tokens = len(self.tokenizer.encode(text))
+        
+        if num_tokens > self.max_tokens:
+            # Truncate to max_tokens
+            text = self.tokenizer.decode(self.tokenizer.encode(text)[:self.max_tokens])
+            num_tokens = self.max_tokens
+            
+        return {
+            "input": text,
+            f"{self.tokenizer_name}_num_tokens": num_tokens
+        }
+    
+    def generate_base_text(self) -> str:
+        """Generate base lorem ipsum text from multiple paragraphs."""
         variation = ''
-        for _ in range(lorem_generate):
+        for _ in range(self.lorem_paragraphs):
             variation += lorem.text()
-        # Split the sentences in the lorem-ipsum variation.
-        variation = variation.replace('\n', ' ')
-        sentences = variation.split('. ')
+        return variation.replace('\n', ' ')
+    
+    def process_sentences(self, sentences: List[str]) -> List[str]:
+        """
+        Process the sentences by shuffling, duplicating words, and adding duplicates.
         
-        while len(sentences) < num_sentences:
+        Args:
+            sentences: List of sentences to process
+            
+        Returns:
+            Processed list of sentences
+        """
+        if len(sentences) < self.num_sentences:
             # Shuffle the order of the sentences
             random.shuffle(sentences)
-
-            # End the loop if we have generated enough samples
-            if generated_lp >= total_samples:
-                break
-
-            # Pick a random sentence, shuffle the words
+            
+            # Process random sentences with various operations
+            self._shuffle_words_in_random_sentence(sentences)
+            self._duplicate_random_sentence(sentences)
+            self._duplicate_words_in_random_sentence(sentences)
+            
+        return sentences
+    
+    def _shuffle_words_in_random_sentence(self, sentences: List[str]) -> None:
+        """Shuffle words in a randomly selected sentence."""
+        if random.random() < self.shuffle_sentence_prob and sentences:
             sentence_index = random.choice(range(len(sentences)))
             sentence = sentences[sentence_index]
-
-            # Split into sentences
+            
+            # Split into words
             words = sentence.split()
-            # Shuffle the words, not the first one (as capital)
-            to_shuffle = words[1:]
-            random.shuffle(to_shuffle)
-            # Set the shuffled words back
-            words[1:] = to_shuffle
-            sentences[sentence_index] = ' '.join(words)
-
-             # Add duplicate sentences randomly
-            if random.random() < 0.3:  # 30% chance to duplicate a sentence
-                sentence_to_repeat = random.choice(sentences)
-                # Repeat the sentence 4 times for amplifying the error
-                sentences.append(sentence_to_repeat)
-                sentences.append(sentence_to_repeat)
-                sentences.append(sentence_to_repeat)
-                sentences.append(sentence_to_repeat)
-            
-            # Duplicate words in random sentences
-            if random.random() < 0.5:  # 50% chance to duplicate a word in a sentence
-                sentence_index = random.choice(range(len(sentences)))
-                words = sentences[sentence_index].split()
-                word_to_duplicate = random.choice(words)
-                # Add the word 4 times to the sentence for amplifying the error
-                words.append(word_to_duplicate)
-                words.append(word_to_duplicate)
-                words.append(word_to_duplicate)
-                words.append(word_to_duplicate)
+            if len(words) > 1:
+                # Shuffle the words, preserving the first one (capital)
+                to_shuffle = words[1:]
+                random.shuffle(to_shuffle)
+                words[1:] = to_shuffle
                 sentences[sentence_index] = ' '.join(words)
-
+    
+    def _duplicate_random_sentence(self, sentences: List[str]) -> None:
+        """Add duplicate sentences randomly."""
+        if random.random() < self.duplicate_sentence_prob and sentences:
+            sentence_to_repeat = random.choice(sentences)
+            # Repeat the sentence multiple times
+            for _ in range(self.duplicate_count):
+                sentences.append(sentence_to_repeat)
+    
+    def _duplicate_words_in_random_sentence(self, sentences: List[str]) -> None:
+        """Duplicate words in random sentences."""
+        if random.random() < self.duplicate_word_prob and sentences:
+            sentence_index = random.choice(range(len(sentences)))
+            words = sentences[sentence_index].split()
+            if words:
+                word_to_duplicate = random.choice(words)
+                # Add the word multiple times
+                for _ in range(self.duplicate_count):
+                    words.append(word_to_duplicate)
+                sentences[sentence_index] = ' '.join(words)
+    
+    def generate_variation(self) -> Optional[Dict[str, Any]]:
+        """
+        Generate a single lorem ipsum variation.
+        
+        Returns:
+            Dictionary with the generated variation or None if generation failed
+        """
+        # Generate base text
+        base_text = self.generate_base_text()
+        sentences = base_text.split('. ')
+        
+        # Process until we have enough sentences
+        while len(sentences) < self.num_sentences:
+            sentences = self.process_sentences(sentences)
+        
         # Join the sentences back into a string
-        to_add_variation = '. '.join(sentences)
-
-        if to_add_variation in added_text:
-            continue
+        text = '. '.join(sentences)
+        
+        # Check if this text has been generated before
+        if text in self.unique_texts:
+            return None
+        
+        # Add to tracking sets
+        self.unique_texts.add(text)
+        
+        # Tokenize and potentially truncate
+        return self.tokenize_and_truncate(text)
+    
+    def generate_all_variations(self) -> List[Dict[str, Any]]:
+        """
+        Generate all variations according to specified parameters.
+        
+        Returns:
+            List of all generated variations
+        """
+        self.variations = []
+        self.unique_texts = set()
+        self.generated_count = 0
+        
+        print(f"Generating {self.total_samples} lorem ipsum variations...")
+        
+        while self.generated_count < self.total_samples:
+            variation = self.generate_variation()
+            if variation:
+                self.variations.append(variation)
+                self.generated_count += 1
+                if self.generated_count % 100 == 0:
+                    print(f"Generated {self.generated_count}/{self.total_samples} variations")
+        
+        # Save to file
+        self.save_to_file()
+        
+        return self.variations
+    
+    def save_to_file(self) -> None:
+        """Save all variations to the specified output file."""
+        with open(self.output_file, 'w') as jsonl_file:
+            for item in self.variations:
+                jsonl_file.write(json.dumps(item) + "\n")
+        
+        print(f"Successfully saved {len(self.variations)} variations to {self.output_file}")
+    
+    @classmethod
+    def get_config_preset(cls, preset_name: str) -> Dict[str, Any]:
+        """
+        Get predefined configuration presets for different token sizes.
+        
+        Args:
+            preset_name: Name of the preset configuration
             
-        generated_lp += 1
-        # print(generated_lp)
-        added_text.append(to_add_variation)
-        data_point = add_new_variation(tokenizer, to_add_variation, max_tokens)
-        variations.append(data_point)
+        Returns:
+            Dictionary with preset configuration parameters
+        """
+        presets = {
+            "1500_tokens": {
+                "lorem_paragraphs": 3,
+                "num_sentences": 110,
+                "max_tokens": 1500
+            },
+            "3000_tokens": {
+                "lorem_paragraphs": 5,
+                "num_sentences": 200,
+                "max_tokens": 3000
+            },
+            "4000_tokens": {
+                "lorem_paragraphs": 7,
+                "num_sentences": 300,
+                "max_tokens": 4000
+            },
+            "5000_tokens": {
+                "lorem_paragraphs": 15,
+                "num_sentences": 400,
+                "max_tokens": 5000
+            }
+        }
+        
+        return presets.get(preset_name, {})
 
-    # Write all variations to a .jsonl file
-    with open(file_name, 'w') as jsonl_file:
-        for item in variations:
-            jsonl_file.write(json.dumps(item) + "\n")  # Write each variation as a separate line
-    
-    print(f"Generated {total_samples} variations and saved to {file_name}.")
-    return variations
-
-
-def main():
-    # Specify the file to save the variations
-    output_file = "datasets/500/loremipsum/data_100_tokens.jsonl"
-    # output_file = "datasets/500/loremipsum/data_5000_tokens.jsonl"
-    # For 3000 tokens, lorem_generate = 5, num_sentences = 200, total_samples = 1500
-    # For 1500 tokens, lorem_generate = 3, num_sentences = 110, total_samples = 1500
-    # For 4000 tokens, lorem_generate = 7, num_sentences = 300, total_samples = 1500
-    # For 5000 tokens, lorem_generate = 15, num_sentences = 400, total_samples = 1500
-    # For 150 tokens, lorem_generate = 3, num_sentences = 12, total_samples = 1500
-    lorem_generate = 3  # Number of lorem ipsum paragraphs to generate
-    num_sentences = 12  # Number of sentences in each variation
-    total_samples = 1500  # Number of variations to generate
-    max_tokens = 100  # Maximum number of tokens in each variation
-    variations = generate_lorem_ipsum_variations(output_file, num_sentences, lorem_generate, total_samples, max_tokens)
-
-
-if __name__ == "__main__":
-    main()
-    # for f in results_file:
-    #     calculate_tokens_per_task(f)
-    

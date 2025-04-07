@@ -1,0 +1,112 @@
+{
+  "llama3.3_70B-instruct": {
+    "4000_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9994921201411759,
+      "avg_deterministic_similarity": 0.9939389099086211,
+      "avg_non_deterministic_similarity": 0.9729166593969085
+    },
+    "500_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.0,
+      "avg_deterministic_similarity": 0.0,
+      "avg_non_deterministic_similarity": 0.0
+    },
+    "3000_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9994768590471624,
+      "avg_deterministic_similarity": 0.9914944257644497,
+      "avg_non_deterministic_similarity": 0.982002132618388
+    },
+    "500_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9966192075934517,
+      "avg_deterministic_similarity": 1.0,
+      "avg_non_deterministic_similarity": 0.9764412416851441
+    },
+    "4000_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.999479636873597,
+      "avg_deterministic_similarity": 0.9933281292754252,
+      "avg_non_deterministic_similarity": 0.9725685683213335
+    },
+    "3000_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9994767030689687,
+      "avg_deterministic_similarity": 0.9922073100894663,
+      "avg_non_deterministic_similarity": 0.9812507152282529
+    },
+    "2000_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9992265266079633,
+      "avg_deterministic_similarity": 1.0,
+      "avg_non_deterministic_similarity": 0.975609756097561
+    },
+    "2000_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9992433291389796,
+      "avg_deterministic_similarity": 1.0,
+      "avg_non_deterministic_similarity": 0.9759878994138779
+    }
+  },
+  "OLMo_7B-instruct": {
+    "500_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9933990976638497,
+      "avg_deterministic_similarity": 0.9988743968664782,
+      "avg_non_deterministic_similarity": 0.931568622211322
+    },
+    "500_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9935534463431142,
+      "avg_deterministic_similarity": 0.9989120116176252,
+      "avg_non_deterministic_similarity": 0.9321752123615334
+    }
+  },
+  "llama3.1_8B": {
+    "500_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9964568558558771,
+      "avg_deterministic_similarity": 0.9998881181472364,
+      "avg_non_deterministic_similarity": 0.9666744183154647
+    },
+    "500_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9958252576561992,
+      "avg_deterministic_similarity": 0.9996336996336997,
+      "avg_non_deterministic_similarity": 0.9642580301123016
+    }
+  },
+  "llama3.1_8B-instruct": {
+    "500_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.0,
+      "avg_deterministic_similarity": 0.0,
+      "avg_non_deterministic_similarity": 0.0
+    },
+    "500_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9971717025972935,
+      "avg_deterministic_similarity": 0.9952283088114282,
+      "avg_non_deterministic_similarity": 0.9804301569333698
+    },
+    "2000_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9991179279831145,
+      "avg_deterministic_similarity": 0.9993014526418555,
+      "avg_non_deterministic_similarity": 0.9736051485481563
+    },
+    "2000_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9989942699745068,
+      "avg_deterministic_similarity": 0.9992584651121237,
+      "avg_non_deterministic_similarity": 0.9699685759850212
+    }
+  },
+  "llama3.1_70B": {
+    "500_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9966106403292497,
+      "avg_deterministic_similarity": 0.9978969060523939,
+      "avg_non_deterministic_similarity": 0.9706676192157615
+    },
+    "500_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9967931694074365,
+      "avg_deterministic_similarity": 0.9982153480071386,
+      "avg_non_deterministic_similarity": 0.9702709090891103
+    },
+    "2000_verbatim_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9989689322781042,
+      "avg_deterministic_similarity": 1.0,
+      "avg_non_deterministic_similarity": 0.9679570064216545
+    },
+    "2000_exact_seed-5.jsonl": {
+      "avg_overall_similarity": 0.9990225753341918,
+      "avg_deterministic_similarity": 1.0,
+      "avg_non_deterministic_similarity": 0.9695694330705064
+    }
+  }
+}
