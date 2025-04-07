@@ -37,7 +37,7 @@ def get_tokenizer_for_model(model_name: str):
     
     # Load the tokenizer
     try:
-        tokenizer = AutoTokenizer.from_pretrained(hf_model_name, token=HF_TOKEN)
+        tokenizer = AutoTokenizer.from_pretrained(hf_model_name, token=HF_TOKEN, trust_remote_code=True)
         return tokenizer
     except Exception as e:
         print(f"Error loading tokenizer for {model_name} ({hf_model_name}): {e}")
@@ -77,7 +77,8 @@ def is_text_similar_enough(text1: str, text2: str) -> bool:
         
     len1, len2 = len(text1), len(text2)
     ratio = min(len1, len2) / max(len1, len2)
-    return ratio > 0.5
+    # The lengths should be within 75 % of each other
+    return ratio > 0.75
 
 def process_jsonl_file(file_path: Path, output_file: Path = None, verbose: bool = True, tokenizer = None):
     """
@@ -233,12 +234,10 @@ def process_sample_entry():
     Process the sample entry provided in the paste-2.txt file
     """
     try:
-        with open('paste-2.txt', 'r', encoding='utf-8') as f:
-            sample_entry = json.loads(f.read().strip())
+        gold_ans = "Tempora quiquia dolor ut porro est. Quisquam numquam porro aliquam quaerat velit modi consectetur. Aliquam etincidunt porro voluptatem numquam consectetur velit. Quaerat tempora sit ipsum. Dolor quiquia quisquam ipsum amet sit. Dolor modi quaerat sit neque est.  Est consectetur ut est. Quisquam numquam tempora quisquam. Dolor numquam ut sed eius. Non consectetur numquam dolorem. Magnam eius eius neque ipsum tempora porro. Magnam labore aliquam consectetur voluptatem. Voluptatem sit dolorem velit quaerat magnam non. Dolor quiquia magnam magnam voluptatem velit etincidunt sed.  Sed ipsum est modi numquam sit non. Non etincidunt adipisci ut non. Etincidunt velit labore quiquia dolor.  Ut numquam sed eius amet porro velit dolorem. Quisquam adipisci dolor quisquam dolorem ipsum consectetur.. Ut consectetur consectetur dolor. Dolore consectetur ipsum sed sed est est. Ut porro dolore sed voluptatem sed. Dolorem adipisci est ipsum. Quisquam numquam est quisquam dolor adipisci dolore aliquam.  Labore consectetur amet numquam magnam. Aliquam quaerat amet quaerat eius. Dolorem dolor ipsum sed. Etincidunt dolor sit dolor porro consectetur tempora. Sit eius sed non voluptatem labore non neque. Non etincidunt dolorem tempora magnam velit neque. Adipisci adipisci labore dolore tempora. Tempora aliquam amet labore quisquam dolore sed. Velit voluptatem non adipisci. Consectetur non labore ipsum quisquam quiquia sed. Aliquam est quisquam magnam quiquia labore. Etincidunt ipsum eius voluptatem quisquam etincidunt consectetur voluptatem. Modi quisquam quaerat tempora.  Tempora porro dolorem porro amet sit. Velit voluptatem dolorem est dolor. Adipisci dolor tempora voluptatem. Quisquam porro sed sed aliquam. Labore aliquam porro quiquia numquam sed neque non. Tempora quiquia porro porro neque aliquam tempora. Quisquam voluptatem consectetur voluptatem quisquam dolorem"
         
-        gold_ans = sample_entry.get('gold_ans', '')
-        model_ans = sample_entry.get('answer', '')
-        
+        model_ans = "Tempora quiquia dolor ut porro est. Quisquam numquam porro aliquam quaerat velit modi consectetur. Aliquam etincidunt porro voluptatem numquam consectetur velit. Quaerat tempora sit ipsum. Dolor quiquia quisquam ipsum amet sit. Dolor modi quaerat sit neque est.  Est consectetur ut est. Quisquam numquam tempora quisquam. Dolor numquam ut sed eius. Non consectetur numquam dolorem. Magnam eius eius neque ipsum tempora porro. Magnam labore aliquam consectetur voluptatem. Voluptatem sit dolorem velit quaerat magnam non. Dolor quiquia magnam magnam voluptatem velit etincidunt sed.  Sed ipsum est modi numquam sit non. Non etincidunt adipisci ut non. Etincidunt velit labore quiquia dolor.  Ut numquam sed eius amet porro velit dolorem. Quisquam adipisci dolor quisquam dolorem ipsum consectetur.. Ut consectetur consectetur dolor. Dolore consectetur ipsum sed sed est. Ut porro dolore sed voluptatem sed. Dolorem adipisci est ipsum. Quisquam numquam est quisquam dolor adipisci dolore aliquam.  Labore consectetur amet numquam magnam. Aliquam quaerat amet quaerat eius. Dolorem dolor ipsum sed. Etincidunt dolor sit dolor porro consectetur tempora. Sit eius sed non voluptatem labore non neque. Non etincidunt dolorem tempora magnam velit neque. Non etincidunt dolorem tempora magnam velit neque. Adipisci adipisci labore dolore tempora. Tempora aliquam amet labore quisquam dolore sed. Velit voluptatem non adipisci. Consectetur non labore ipsum quisquam quiquia sed. Aliquam est quisquam magnam quiquia labore. Etincidunt ipsum eius voluptatem quisquam etincidunt consectetur voluptatem. Modi quisquam quaerat tempora.  Tempora porro dolorem porro amet sit. Velit voluptatem dolorem est dolor. Adipisci dolor tempora voluptatem. Quisquam porro sed sed aliquam. Labore aliquam porro quiquia numquam sed neque non. Tempora quiquia porro porro neque aliquam tempora. Quisquam voluptatem consectetur voluptatem quisquam dolorem"
+                
         # Pre-comparison checks
         if gold_ans.strip() == model_ans.strip():
             print("\n=== Sample Entry Analysis ===")
@@ -250,9 +249,10 @@ def process_sample_entry():
             print("Result: LENGTH MISMATCH")
             return
         
-        gold_tokens = tokenize_text(gold_ans)
-        model_tokens = tokenize_text(model_ans)
-        
+        gold_tokens = tokenize_text(gold_ans, tokenizer=get_tokenizer_for_model("llama3.1_8B"))
+        model_tokens = tokenize_text(model_ans, tokenizer=get_tokenizer_for_model("llama3.1_8B"))
+        print(gold_tokens)
+        print(model_tokens)
         print("\n=== Sample Entry Analysis ===")
         print(f"Gold Answer Length: {len(gold_ans)} characters, {len(gold_tokens)} tokens")
         print(f"Model Answer Length: {len(model_ans)} characters, {len(model_tokens)} tokens")
@@ -286,13 +286,28 @@ def process_multiple_models(base_dir: str, output_dir: str = None, verbose: bool
         curr_output_dir = output_dir / model_name 
         curr_output_dir.mkdir(parents=True, exist_ok=True)
 
-        for input_file in model_result_dir.iterdir():
-            if input_file.suffix != '.jsonl':
-                continue
+        for input_file in model_result_dir.rglob('*.jsonl'):
 
-            # Same name as input file; just in the output directory
-            output_file = curr_output_dir / input_file.name            
-            print(f"\nProcessing {input_file}...")
+            # Get the parts of the path we need to preserve
+            # First determine what parts of the paths we have in common
+            input_parts = list(input_file.parts)
+            model_dir_parts = list(model_result_dir.parts)
+
+            # Extract the common subpath by finding all common directories
+            common_index = 0
+            for i, (part1, part2) in enumerate(zip(input_parts, model_dir_parts)):
+                if part1 == part2:
+                    common_index = i + 1
+                else:
+                    break
+            # Get the part of the path after the common directories
+            subpath = input_parts[common_index:] 
+            # Combine with output directory
+            output_file = curr_output_dir.joinpath(*subpath)
+            # Create the parent directories if they don't exist
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            print(f"\nProcessing {input_file}...{output_file}")
+            
             _, avg_stats = process_jsonl_file(input_file, output_file, verbose, tokenizer=tokenizer)
             model_results[output_file.name] = avg_stats
         

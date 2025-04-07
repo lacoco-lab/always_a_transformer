@@ -1,5 +1,98 @@
-from collections import defaultdict
+from itertools import product
+from collections import deque, defaultdict
 from typing import List, Tuple, Dict, Any, Union
+
+
+def needleman_wunsch(x, y):
+    """Run the Needleman-Wunsch algorithm on two sequences.
+
+    x, y -- sequences.
+
+    Code based on pseudocode in Section 3 of:
+
+    Naveed, Tahir; Siddiqui, Imitaz Saeed; Ahmed, Shaftab.
+    "Parallel Needleman-Wunsch Algorithm for Grid." n.d.
+    https://upload.wikimedia.org/wikipedia/en/c/c4/ParallelNeedlemanAlgorithm.pdf
+    """
+    N, M = len(x), len(y)
+    s = lambda a, b: int(a == b)
+
+    DIAG = -1, -1
+    LEFT = -1, 0
+    UP = 0, -1
+
+    # Create tables F and Ptr
+    F = {}
+    Ptr = {}
+
+    F[-1, -1] = 0
+    for i in range(N):
+        F[i, -1] = -i
+    for j in range(M):
+        F[-1, j] = -j
+
+    option_Ptr = DIAG, LEFT, UP
+    for i, j in product(range(N), range(M)):
+        option_F = (
+            F[i - 1, j - 1] + s(x[i], y[j]),
+            F[i - 1, j] - 1,
+            F[i, j - 1] - 1,
+        )
+        F[i, j], Ptr[i, j] = max(zip(option_F, option_Ptr))
+
+    # Work backwards from (N - 1, M - 1) to (0, 0)
+    # to find the best alignment.
+    alignment = deque()
+    i, j = N - 1, M - 1
+    while i >= 0 and j >= 0:
+        direction = Ptr[i, j]
+        if direction == DIAG:
+            element = i, j
+        elif direction == LEFT:
+            element = i, None
+        elif direction == UP:
+            element = None, j
+        alignment.appendleft(element)
+        di, dj = direction
+        i, j = i + di, j + dj
+    while i >= 0:
+        alignment.appendleft((i, None))
+        i -= 1
+    while j >= 0:
+        alignment.appendleft((None, j))
+        j -= 1
+
+    return list(alignment)
+
+
+def align_fast(x, y):
+    """Align two sequences, maximizing the
+    alignment score, using the Needleman-Wunsch
+    algorithm.
+
+    x, y -- sequences.
+    """
+    alignment = needleman_wunsch(x, y)
+    new_alignment = []
+    for x_idx, y_idx in alignment:
+        if x_idx is None and y_idx is not None:
+            new_alignment.append(('insert', x_idx, y_idx))
+        elif y_idx is None:
+            new_alignment.append(('delete', x_idx, y_idx))
+        elif (x[x_idx] == y[y_idx]):
+            new_alignment.append(('match', x_idx, y_idx))            
+        elif x_idx is not None and y_idx is not None:
+            new_alignment.append(('substitute', x_idx, y_idx))
+    return new_alignment
+
+
+def print_alignment(x, y, alignment):
+    print("".join(
+        "-" if i is None else x[i] for i, _ in alignment
+    ))
+    print("".join(
+        "-" if j is None else y[j] for _, j in alignment
+    ))
 
 
 class ContextAwareBigramComparator:
@@ -52,141 +145,6 @@ class ContextAwareBigramComparator:
         return deterministic, non_deterministic
 
     @staticmethod
-    def get_token_alignment(seq1: List[Any], seq2: List[Any]) -> List[Tuple[str, int, int]]:
-        """
-        Calculate token-level alignment between sequences using both forward and
-        reverse alignments, and choose the one that preserves early matches better.
-        
-        Args:
-            seq1: First sequence (reference)
-            seq2: Second sequence (hypothesis)
-        Returns:
-            List of (operation, seq1_index, seq2_index) tuples in forward order
-        """
-        m, n = len(seq1), len(seq2)
-        
-        # PART 1: Build standard forward DP matrix
-        dp_forward = [[0] * (n + 1) for _ in range(m + 1)]
-        
-        # Initialize the first row and column
-        for i in range(m + 1):
-            dp_forward[i][0] = i
-        for j in range(n + 1):
-            dp_forward[0][j] = j
-        
-        # Fill the matrix
-        for i in range(1, m + 1):
-            for j in range(1, n + 1):
-                if seq1[i-1] == seq2[j-1]:
-                    dp_forward[i][j] = dp_forward[i-1][j-1]
-                else:
-                    dp_forward[i][j] = 1 + min(dp_forward[i-1][j],    # deletion
-                                            dp_forward[i][j-1],     # insertion
-                                            dp_forward[i-1][j-1])   # substitution
-        
-        # PART 2: Build reverse DP matrix using reversed sequences
-        rev_seq1 = seq1[::-1]
-        rev_seq2 = seq2[::-1]
-        
-        dp_reverse = [[0] * (n + 1) for _ in range(m + 1)]
-        
-        # Initialize the first row and column
-        for i in range(m + 1):
-            dp_reverse[i][0] = i
-        for j in range(n + 1):
-            dp_reverse[0][j] = j
-        
-        # Fill the matrix
-        for i in range(1, m + 1):
-            for j in range(1, n + 1):
-                if rev_seq1[i-1] == rev_seq2[j-1]:
-                    dp_reverse[i][j] = dp_reverse[i-1][j-1]
-                else:
-                    dp_reverse[i][j] = 1 + min(dp_reverse[i-1][j],    # deletion
-                                            dp_reverse[i][j-1],     # insertion
-                                            dp_reverse[i-1][j-1])   # substitution
-        
-        # PART 3: Generate standard alignment (backtracking from end)
-        forward_alignment_reversed = []
-        i, j = m, n
-        
-        while i > 0 or j > 0:
-            if i > 0 and j > 0 and seq1[i-1] == seq2[j-1]:
-                forward_alignment_reversed.append(('match', i-1, j-1))
-                i -= 1
-                j -= 1
-            elif i > 0 and j > 0 and dp_forward[i][j] == dp_forward[i-1][j-1] + 1:
-                forward_alignment_reversed.append(('substitute', i-1, j-1))
-                i -= 1
-                j -= 1
-            elif i > 0 and dp_forward[i][j] == dp_forward[i-1][j] + 1:
-                forward_alignment_reversed.append(('delete', i-1, None))
-                i -= 1
-            else:
-                forward_alignment_reversed.append(('insert', None, j-1))
-                j -= 1
-        
-        # PART 4: Generate reverse alignment (backtracking from end of reversed sequences)
-        reverse_alignment_reversed = []
-        i, j = m, n
-        
-        while i > 0 or j > 0:
-            if i > 0 and j > 0 and rev_seq1[i-1] == rev_seq2[j-1]:
-                # Convert indices back to original sequence positions (critical fix)
-                orig_i = m - i
-                orig_j = n - j
-                reverse_alignment_reversed.append(('match', orig_i, orig_j))
-                i -= 1
-                j -= 1
-            elif i > 0 and j > 0 and dp_reverse[i][j] == dp_reverse[i-1][j-1] + 1:
-                orig_i = m - i
-                orig_j = n - j
-                reverse_alignment_reversed.append(('substitute', orig_i, orig_j))
-                i -= 1
-                j -= 1
-            elif i > 0 and dp_reverse[i][j] == dp_reverse[i-1][j] + 1:
-                orig_i = m - i
-                reverse_alignment_reversed.append(('delete', orig_i, None))
-                i -= 1
-            else:
-                orig_j = n - j
-                reverse_alignment_reversed.append(('insert', None, orig_j))
-                j -= 1
-        
-        # PART 5: Put alignments in the correct order (start to end)
-        # Sort by reference index when available, otherwise by hypothesis index
-        def sort_key(item):
-            op, idx1, idx2 = item
-            if idx1 is not None:
-                return idx1
-            else:
-                return idx2
-        
-        # Sort the alignments by position in the original sequence
-        forward_alignment = sorted(forward_alignment_reversed, key=sort_key)
-        reverse_alignment = sorted(reverse_alignment_reversed, key=sort_key)
-        
-        # PART 6: Compare alignments and choose the one with better early matches
-        def early_match_score(alignment):
-            score = 0
-            for op, idx1, _ in alignment:
-                if op == 'match':
-                    # Strongly prefer matches at earlier positions
-                    # Use exponential decay weight - earlier positions are worth much more
-                    score += 100 * (0.9 ** idx1) if idx1 is not None else 0
-            return score
-        
-        forward_score = early_match_score(forward_alignment)
-        reverse_score = early_match_score(reverse_alignment)
-        
-        # Choose the alignment with better early matches
-        chosen_alignment = reverse_alignment if reverse_score > forward_score else forward_alignment
-        
-        # Verify the alignment is in the correct order (start to end)
-        # This is a double-check to ensure the output is correct
-        return chosen_alignment
-
-    @staticmethod
     def group_operations(alignment: List[Tuple[str, Any, Any]]) -> List[Tuple[str, List[Tuple[Any, Any]]]]:
         """
         Group consecutive operations of the same type.
@@ -232,7 +190,7 @@ class ContextAwareBigramComparator:
         """
         # TO DO : Need to handle empty sequences
         # Get the alignment
-        alignment = ContextAwareBigramComparator.get_token_alignment(seq1, seq2)
+        alignment = align_fast(seq1, seq2)
         # Group operations
         return ContextAwareBigramComparator.group_operations(alignment)
         
@@ -266,28 +224,7 @@ class ContextAwareBigramComparator:
         result = []
         result.append("Reference:  " + " ".join(ref_result))
         result.append("Hypothesis: " + " ".join(hyp_result))
-        result.append("Operations: " + " ".join(op_result))
-        
-        # Identify branch errors
-        branch_errors = ContextAwareBigramComparator.detect_branch_errors(
-            reference_tokens, hypothesis_tokens, alignment
-        )
-        
-        if branch_errors:
-            branch_markers = [''] * len(ref_result)
-            for pos in branch_errors:
-                # Find position in alignment
-                align_pos = None
-                for i, (op, ref_idx, _) in enumerate(alignment):
-                    if ref_idx == pos:
-                        align_pos = i
-                        break
-                
-                if align_pos is not None:
-                    branch_markers[align_pos] = '↓'
-            
-            result.append("Branches:   " + " ".join(branch_markers))
-        
+        result.append("Operations: " + " ".join(op_result))        
         return "\n".join(result)
     
     @staticmethod
@@ -317,6 +254,8 @@ class ContextAwareBigramComparator:
             }
         }
         
+        # print("deterministic", deterministic_tokens)
+        # print("non deterministic", non_deterministic_tokens)
         # Process each transition between match and edit operations
         for i in range(len(grouped_alignment) - 1):
             current_op, current_indices = grouped_alignment[i]
@@ -421,10 +360,10 @@ class ContextAwareBigramComparator:
                 
         # Get token-level edit groups for overall metric
         all_groups = cls.context_aware_distance(reference_tokens, hypothesis_tokens)        
-        # print(all_groups)
+        # print(all_groupspost)
         result = cls.classify_alignments(all_groups, det_firsts, non_det_firsts, reference_tokens)
         return result
-    
+
 
 # Simple usage example
 def compare_sequences_context_aware(reference: List[Any], hypothesis: List[Any], formatted: bool = True) -> Union[Dict, str]:
@@ -444,30 +383,16 @@ def compare_sequences_context_aware(reference: List[Any], hypothesis: List[Any],
 
 if __name__ == "__main__":
     # Example usage
-    reference = ['a', 'b', 'c', 'a', 'c', 'a', 'f', 'b', 'c']
     cases = [
-        ['a', 'd', 'c', 'a', 'c', 'a', 'f', 'b', 'c'],  # single substitution (b→d)
-        ['a', 'c', 'a', 'c', 'a', 'f', 'b', 'c'],       # single deletion (b missing)
+        (['a', 'b', 'c', 'a', 'c', 'a', 'f', 'b', 'c'], ['a', 'd', 'c', 'a', 'c', 'a', 'f', 'b', 'c']),  # single substitution (b→d)
+        (['a', 'b', 'c', 'a', 'c', 'a', 'f', 'b', 'c'], ['a', 'c', 'a', 'c', 'a', 'f', 'b', 'c']),       # single deletion (b missing)
+        (['some', 'where', 'I', 'be', 'lo', 'ng', 'be', 'lo', 'ng', 'to', 'you'], ['some', 'where', 'I', 'be', 'lo', 'ng', 'to', 'you']), # a lot of consecutive deletions,
+        (['Ġdolor', 'Ġipsum', 'Ġsed', '.', 'ĠEt', 'inc', 'idunt', 'Ġdolor', 'Ġsit', 'Ġdolor', 'Ġpor', 'ro', 'Ġconsectetur', 'Ġtemp', 'ora', '.', 'ĠSit', 'Ġeius', 'Ġsed', 'Ġnon', 'Ġvolupt', 'atem', 'Ġlabore', 'Ġnon', 'Ġne', 'que', '.', 'ĠNon', 'Ġet', 'inc', 'idunt', 'Ġdol', 'orem', 'Ġtemp', 'ora', 'Ġmagn', 'am', 'Ġvelit', 'Ġne', 'que', '.', 'ĠAd', 'ip', 'isci'], ['Ġdolor', 'Ġipsum', 'Ġsed', '.', 'ĠEt', 'inc', 'idunt', 'Ġdolor', 'Ġsit', 'Ġdolor', 'Ġpor', 'ro', 'Ġconsectetur', 'Ġtemp', 'ora', '.', 'ĠSit', 'Ġeius', 'Ġsed', 'Ġnon', 'Ġvolupt', 'atem', 'Ġlabore', 'Ġnon', 'Ġne', 'que', '.', 'ĠNon', 'Ġet', 'inc', 'idunt', 'Ġdol', 'orem', 'Ġtemp', 'ora', 'Ġmagn', 'am', 'Ġvelit', 'Ġne', 'que', '.', 'ĠNon', 'Ġet', 'inc', 'idunt', 'Ġdol', 'orem', 'Ġtemp', 'ora', 'Ġmagn', 'am', 'Ġvelit', 'Ġne', 'que', '.', 'ĠAd', 'ip', 'isci']) # Actual sample
     ]
     
-    print(f"Reference sequence: {reference}")
     
-    for i, case in enumerate(cases):
-        print(f"\n\n--- Case {i+1}: {case} ---")
+    for idx, (reference, case) in enumerate(cases):
+        print(f"\n\n--- Case {idx+1}: {case} ---")
+        print(f"Reference sequence: {reference}")
         result = compare_sequences_context_aware(reference, case)
         print(result)
-        
-        # Debug: Print alignment details
-        # alignment = ContextAwareBigramComparator.get_token_alignment(reference, case)
-        # print("\nAlignment Details:")
-        # print(ContextAwareBigramComparator.format_alignment(reference, case, alignment))
-    
-    # Example with repeated subsequence
-    reference2 = ['some', 'where', 'I', 'be', 'lo', 'ng', 'be', 'lo', 'ng', 'to', 'you']
-    case2 = ['some', 'where', 'I', 'be', 'lo', 'ng', 'to', 'you']
-    
-    print(f"\n\nReference sequence with repeated pattern: {reference2}")
-    print(f"Hypothesis with missing repetition: {case2}")
-    result2 = compare_sequences_context_aware(reference2, case2)
-    result2
-    # print(result2['scores'])
