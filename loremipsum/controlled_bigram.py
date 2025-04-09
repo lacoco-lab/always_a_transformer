@@ -1,8 +1,44 @@
+import os
 import json
 import random
-from collections import defaultdict
 from transformers import AutoTokenizer
-from typing import List, Dict, Any, Optional, Set
+from typing import List, Dict, Any, Optional
+
+
+HF_TOKEN = os.environ.get("HF_TOKEN", None)
+
+def get_tokenizer_for_model(model_name: str):
+    """
+    Get the appropriate tokenizer for a given model.
+    
+    Args:
+        model_name: Name of the model
+        
+    Returns:
+        A tokenizer instance
+    """
+    # Map model names to their corresponding HuggingFace model identifiers
+    model_to_hf_mapping = {
+        "llama3.1_8B": "meta-llama/Llama-3.1-8B",
+        "llama3.1_8B-instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "llama3.1_70B": "meta-llama/Meta-Llama-3.1-70B",
+        "llama3.3_70B-instruct": "meta-llama/Llama-3.3-70B-Instruct",
+        "OLMo_7B-instruct": "allenai/OLMo-7B-Instruct"
+    }
+    
+    # Get the huggingface model identifier
+    hf_model_name = model_to_hf_mapping.get(model_name)
+    
+    if not hf_model_name:
+        raise ValueError(f"Unknown model name: {model_name}. Supported models are: {list(model_to_hf_mapping.keys())}")
+    
+    # Load the tokenizer
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(hf_model_name, token=HF_TOKEN, trust_remote_code=True)
+        return tokenizer
+    except Exception as e:
+        print(f"Error loading tokenizer for {model_name} ({hf_model_name}): {e}")
+        return None
 
 class ControlledBigramGenerator:
     """
@@ -140,7 +176,21 @@ class ControlledBigramGenerator:
             "stop", "start", "turn", "work", "play", "rest", "sing", "dance", "think", "feel",
             "know", "help", "give", "take", "make", "build", "fix", "break", "push", "pull",
             "drop", "lift", "cut", "grow", "fall", "rise", "buy", "sell", "pay", "meet",
-            "find", "lose", "hide", "seek", "drive", "ride", "cook", "wash", "dry", "clean"
+            "find", "lose", "hide", "seek", "drive", "ride", "cook", "wash", "dry", "clean",
+
+            # Function words
+            "the", "a", "an", "and", "or", "but", "of", "to", "in", "on", "at", "for", "with",
+            "by", "from", "as", "is", "are", "was", "were", "be", "been", "being", "this", "that",
+            "these", "those", "it", "its", "they", "them", "their", "theirs", "what", "which", "who",
+            "whom", "whose", "when", "where", "why", "how", "not", "no", "yes", "all", "any", "some",
+            "many", "few", "each", "every", "other",
+
+            # Adverbs 
+            "now", "then", "here", "there", "just", "also", "very", "well",
+            "only", "even", "back", "down", "still", "too", "much", "more",
+            "most", "less", "least", "often", "never", "ever", "soon", "once",
+            "twice", "quite", "so", "thus", "when", "why", "how", "where", "out",
+            "up", "off", "on", "in", "over", "yet", "ago"            
         ]
         
         # Remove duplicates
@@ -331,48 +381,6 @@ class ControlledBigramGenerator:
         print(f"Non-deterministic bigrams: {total_non_deterministic} ({total_non_deterministic/total_bigrams:.2%})")
         print(f"Random bigrams: {total_random} ({total_random/total_bigrams:.2%})")
         print(f"Target deterministic ratio: {self.deterministic_ratio:.2%}")
-    
-    @staticmethod
-    def get_preset_config(preset_name: str) -> Dict[str, Any]:
-        """
-        Get predefined configuration presets.
-        
-        Args:
-            preset_name: Name of the preset configuration
-            
-        Returns:
-            Dictionary with preset configuration parameters
-        """
-        presets = {
-            "balanced": {
-                "deterministic_ratio": 0.5,
-                "vocabulary_size": 1000,
-                "paragraph_length": 200,
-            },
-            "mostly_deterministic": {
-                "deterministic_ratio": 0.8,
-                "vocabulary_size": 800,
-                "paragraph_length": 250,
-            },
-            "mostly_non_deterministic": {
-                "deterministic_ratio": 0.2,
-                "vocabulary_size": 1200,
-                "paragraph_length": 180,
-            },
-            "short_paragraphs": {
-                "deterministic_ratio": 0.5,
-                "vocabulary_size": 500,
-                "paragraph_length": 100,
-            },
-            "long_paragraphs": {
-                "deterministic_ratio": 0.5,
-                "vocabulary_size": 1500,
-                "paragraph_length": 400,
-            }
-        }
-        
-        return presets.get(preset_name, {})
-    
 
 
 def get_random_positions(target_count: int, curr_length: int = 100):
@@ -396,20 +404,34 @@ def get_random_positions(target_count: int, curr_length: int = 100):
             positions.add(pos)
     return sorted(list(positions)) 
 
-# Load a tokenizer (e.g., GPT-2 tokenizer)
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B")
 
-# Create a generator with custom settings
-generator = ControlledBigramGenerator(
-    tokenizer=tokenizer,
-    output_file="controlled_bigrams.jsonl",
-    deterministic_ratio=0.2,  # 60% deterministic bigrams, 40% non-deterministic
-    vocabulary_size=290,      # Use 800 unique words
-    paragraph_length=2000,     # Generate paragraphs with 150 words
-    total_samples=1000,       # Generate 1000 different paragraphs
-    max_tokens=1500,          # Limit to 1500 tokens per paragraph
-    tokenizer_name="gpt2"    # Identifier for the tokenizer
-)
+if __name__ == "__main__":
+    # Arg parse
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate controlled bigram paragraphs.")
+    parser.add_argument("--deterministic_ratio", type=float, default=0.2, help="Ratio of deterministic bigrams")
+    parser.add_argument("--vocabulary_size", type=int, default=350, help="Vocabulary size")
+    parser.add_argument("--paragraph_length", type=int, default=1500, help="Paragraph length")
+    parser.add_argument("--total_samples", type=int, default=1500, help="Total samples to generate")
+    parser.add_argument("--max_tokens", type=int, default=2000, help="Max tokens per paragraph")
 
-# Generate all paragraphs
-paragraphs = generator.generate_all_variations()
+    # Get parameters from argparse
+    args = parser.parse_args()
+
+    for tokenizer_name in ["llama3.1_8B", "llama3.1_8B-instruct", "llama3.1_70B", "llama3.3_70B-instruct", "OLMo_7B-instruct"]:
+        tokenizer = get_tokenizer_for_model(tokenizer_name)
+        output_file = os.path.join("datasets", "copy_controlled", "_".join([tokenizer_name, str(args.deterministic_ratio), str(args.max_tokens)]) + '.jsonl')
+
+        # Create a generator with custom settings
+        generator = ControlledBigramGenerator(
+            tokenizer=tokenizer,
+            output_file=output_file,
+            deterministic_ratio=args.deterministic_ratio,
+            vocabulary_size=args.vocabulary_size,  # Vocabulary size
+            paragraph_length=args.paragraph_length,  # Paragraph length
+            total_samples=args.total_samples,  # Dataset size for prompting a given model
+            max_tokens=args.max_tokens,   # Limit to these many tokens per sample
+            tokenizer_name=tokenizer_name    # Identifier for the tokenizer
+        )
+        # Generate all paragraphs
+        paragraphs = generator.generate_all_variations()
