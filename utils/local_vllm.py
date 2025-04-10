@@ -12,8 +12,9 @@ def construct_vllm_chat_prompt(task_prompt, system_prompt):
 def _prepare_prompts_vllm(data, task_prompt, system_prompt, spaced=False):
     chat_data = []
     for d in data:
-        prompt_message = construct_vllm_chat_prompt(task_prompt.text({"input": " ".join(list(d.strip()[:-1])) if spaced else d.strip()[:-1]}),
-                                                    system_prompt.text())
+        prompt_message = construct_vllm_chat_prompt(task_prompt.text({
+                    "input": " ".join(list(d.strip()[:-1])) if spaced else d.strip()[:-1]
+                    }), system_prompt.text())
         chat_data.append(prompt_message)
     return chat_data
 

@@ -1,14 +1,14 @@
+import openai
 import argparse
+import jsonlines
 
 from pathlib import Path
 
-import jsonlines
-import openai
 
 from banks.registries import DirectoryPromptRegistry
 
+from utils.utils import save_to_jsonl
 from utils.vllm_openai_server import batch_chat, wait_for_engine_to_start
-from utils.utils import save_to_jsonl, get_first_write_index
 
 # INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
 #                              "extra_body": {"top_k": -1}}
