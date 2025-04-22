@@ -10,6 +10,12 @@ from typing import Any, Dict, List, Iterable, Tuple, AsyncGenerator
 from utils.inference_constants import INSTRUCT_INFERENCE_PARAMS, COMPLETION_INFERENCE_PARAMS
 
 
+async def get_first_model_id(client: Any) -> str:
+    async for model in client.models.list():
+        return model.id
+    raise RuntimeError("No models found")
+
+
 def wait_for_engine_to_start(server_url: str, secs: int = 10):
     """ Wait for the vLLM server to be available.
     Attempt to check the health end point, if it returns 200. print the same
@@ -32,6 +38,7 @@ def wait_for_engine_to_start(server_url: str, secs: int = 10):
 
 async def openai_vllm_chat(
     client: Any, 
+    model_id: Any,
     task_prompt: str, 
     system_prompt: str, 
     inference_params: Dict[str, Any], 
@@ -57,9 +64,6 @@ async def openai_vllm_chat(
         Exception: If the API call fails for any reason
     """
     try:
-        # First, get the available models (this is an async operation)
-        model_list = await client.models.list()
-        model_id = model_list.data[0].id    
     
         # Prepare the messages for the chat completion
         messages = [
@@ -104,7 +108,8 @@ async def _prepare_prompts(
 
 async def openai_single_chat(
     data: Iterable[str], 
-    client: Any, 
+    client: Any,
+    model_id: Any, 
     task_prompt: Any, 
     system_prompt: Any, 
     spaced_input: bool = False, 
@@ -131,7 +136,7 @@ async def openai_single_chat(
     """
     q_tasks = []
     async for d_idx, d in _prepare_prompts(data, task_prompt, spaced=spaced_input):
-        q_task = asyncio.create_task(openai_vllm_chat(client, d, system_prompt.text(), inference_params,
+        q_task = asyncio.create_task(openai_vllm_chat(client, model_id, d, system_prompt.text(), inference_params,
                                                       xid=xid.format(d_idx)))
         q_tasks.append(q_task)
 
@@ -142,7 +147,7 @@ async def openai_single_chat(
 
 def batch_chat(
     data: Iterable[str], 
-    client: Any, 
+    client: Any,
     task_prompt: Any, 
     system_prompt: Any, 
     batch_size: int = 1000, 
@@ -168,17 +173,20 @@ def batch_chat(
     responses = []
     # Create a list of lists where each sub list has batch_size number of data samples 
     chunked_data = list(chunked(data, batch_size))
-    
+    # First, get the available models (this is an async operation)
+    model_id = asyncio.run(get_first_model_id(client))
+
     for chunk in tqdm(chunked_data):
         # Give the entire chunk to the open_ai_client and get responses ; HOW CHUNK in SINGLE CHAT?
-        resp = asyncio.run(openai_single_chat(chunk, client, task_prompt, system_prompt, inference_params=inference_params))
+        resp = asyncio.run(openai_single_chat(chunk, client, model_id, task_prompt, system_prompt, inference_params=inference_params))
         # Responses are added to the list ; HOW ASYNCIO WORKS
         responses.extend(resp)
     return responses
 
 
 async def openai_vllm_complete(
-    client: Any, 
+    client: Any,
+    model_id: Any, 
     task_prompt: str, 
     inference_params: Dict[str, Any], 
     xid: str = "task"
@@ -195,10 +203,7 @@ async def openai_vllm_complete(
         
     Returns:
         The complete response object from the chat completion API
-    """    
-    model_list = await client.models.list()
-    model_id = model_list.data[0].id
-
+    """
     response = await client.completions.create(
         model=model_id,
         prompt=task_prompt,
@@ -212,7 +217,8 @@ async def openai_vllm_complete(
 
 async def openai_single_complete(
     data: Iterable[str], 
-    client: Any, 
+    client: Any,
+    model_id: Any, 
     task_prompt: Any, 
     xid: str = "task-{}", 
     inference_params: Dict[str, Any] = COMPLETION_INFERENCE_PARAMS
@@ -237,7 +243,7 @@ async def openai_single_complete(
     """    
     q_tasks = []
     async for d_idx, d in _prepare_prompts(data, task_prompt):
-        q_task = asyncio.create_task(openai_vllm_complete(client, d, inference_params, xid=xid.format(d_idx)))
+        q_task = asyncio.create_task(openai_vllm_complete(client, model_id, d, inference_params, xid=xid.format(d_idx)))
         q_tasks.append(q_task)
 
     await tqdm.gather(*q_tasks)
@@ -272,9 +278,10 @@ def batch_complete(
     """    
     # Similar to batch chat.
     responses = []
+    model_id = asyncio.run(get_first_model_id(client))
     chunked_data = list(chunked(data, batch_size))
     for chunk in tqdm(chunked_data):
         # Create a new event loop for each batch and process all items in parallel
-        resp = asyncio.run(openai_single_complete(chunk, client, task_prompt, inference_params=inference_params))
+        resp = asyncio.run(openai_single_complete(chunk, client, model_id, task_prompt, inference_params=inference_params))
         responses.extend(resp)
     return responses
