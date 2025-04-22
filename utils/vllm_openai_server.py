@@ -177,10 +177,9 @@ def batch_chat(
     model_id = asyncio.run(get_first_model_id(client))
 
     for chunk in tqdm(chunked_data):
-        # Give the entire chunk to the open_ai_client and get responses ; HOW CHUNK in SINGLE CHAT?
-        resp = asyncio.run(openai_single_chat(chunk, client, model_id, task_prompt, system_prompt, inference_params=inference_params))
-        # Responses are added to the list ; HOW ASYNCIO WORKS
-        responses.extend(resp)
+        # Process the current chunk of data asynchronously using the openai_single_chat function
+        resp = asyncio.run(openai_single_chat(chunk, client, task_prompt, system_prompt, inference_params=inference_params))
+        # Add the responses from the current chunk to the overall responses list
     return responses
 
 
