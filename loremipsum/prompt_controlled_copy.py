@@ -8,10 +8,8 @@ from banks.registries import DirectoryPromptRegistry
 from utils.utils import save_to_jsonl
 from utils.vllm_openai_server import batch_chat, wait_for_engine_to_start, batch_complete
 
-# INSTRUCT_INFERENCE_PARAMS = {"max_tokens": 3000, "temperature": 0, "stop": "THE_END", "logprobs": True, 
-#                              "extra_body": {"top_k": -1}}
 
-LCTX_INFERENCE_PARAMS = {"max_tokens": 16000, "temperature": 0, "logprobs": True, "seed": 5,
+LCTX_INFERENCE_PARAMS = {"max_tokens": 4000, "temperature": 0, "logprobs": True, "seed": 5,
                           "extra_body": {"top_k": -1}}
 
 SCTX_INFERENCE_PARAMS = {"max_tokens": 2000, "temperature": 0, "stop": "THE_END", "logprobs": True, "seed": 5,
@@ -26,25 +24,27 @@ def get_prompts_from_registry(prompt_path, config='exact'):
     return task_prompt, system_prompt
 
 
-def get_correct_inference_params(save_path):
-    if "llama" in save_path.lower() or "qwq" in save_path.lower():
-        return LCTX_INFERENCE_PARAMS
-    elif "olmo" in args.save_path.lower():
-        return SCTX_INFERENCE_PARAMS
+def get_correct_inference_params(max_inp_len):
+    if "olmo" in args.save_path.lower():
+        params = SCTX_INFERENCE_PARAMS
     else:
-        raise ValueError("Unknown model")    
+        params = LCTX_INFERENCE_PARAMS
+    # Set the maximum number of tokens to the number of inputs in the character * 2.
+    params['max_tokens'] = int(max_inp_len * 1.5)
+    return params
 
 
 def read_dataset_jsonl(dataset_path):
     # read jsonl file
-    all_data, just_inputs = [], []
+    max_len, all_data, just_inputs = 0, [], []
     with jsonlines.open(dataset_path, "r") as reader:
         for obj in reader:
             curr_input = obj["input"].strip()
             obj["gold_ans"] = curr_input
             all_data.append(obj)
             just_inputs.append(curr_input)
-    return just_inputs, all_data
+            max_len = max(max_len, len(curr_input.split(' ')))
+    return just_inputs, all_data, max_len
 
 
 def parse_paragraph_response(response_text):
@@ -58,31 +58,18 @@ def parse_paragraph_response(response_text):
     return answer
 
 
-def merge_data_with_responses(copying_data, all_responses):
+def merge_data_with_responses(copying_data, all_responses, is_chat=True):
     for (curr_data, response) in zip(copying_data, all_responses):
-        curr_data["answer"] = parse_paragraph_response(response.choices[0].message.content)
-        curr_data["full_answer"] = response.choices[0].message.content
+        if is_chat is True:
+            # For Instruct models ; output has response.choices[0].message.content
+            curr_data["answer"] = parse_paragraph_response(response.choices[0].message.content)
+            curr_data["full_answer"] = response.choices[0].message.content
+        else:
+            # For completion models ; output has response.choices[0].text
+            curr_data["answer"] = response.choices[0].text
         curr_data["input_length"] = response.usage.prompt_tokens
         curr_data["output_length"] = response.usage.completion_tokens
     return copying_data
-
-
-def reverse_string_by_word(s):
-    return " ".join(s.split()[::-1])
-
-
-def get_op_num_tokens(ip_path):
-    op_num_tokens = 500
-    if "3000" in ip_path:
-        op_num_tokens = 3000
-    elif "4000" in ip_path:
-        op_num_tokens = 4000
-    elif "5000" in ip_path:
-        op_num_tokens = 5000
-    elif "bigger" in ip_path:
-        op_num_tokens = 2000
-    
-    return op_num_tokens
 
 
 if __name__ == "__main__":
@@ -97,7 +84,7 @@ if __name__ == "__main__":
 
     args = ap.parse_args()
 
-    copying_inputs, copying_data = read_dataset_jsonl(args.ip_path)
+    copying_inputs, copying_data, max_inp_len = read_dataset_jsonl(args.ip_path)
     task_prompt, system_prompt = get_prompts_from_registry(args.prompt_path, args.config)
 
     # Make sure the results can be saved somewhere
@@ -107,10 +94,10 @@ if __name__ == "__main__":
     base_url = f"http://0.0.0.0:{args.port}/v1"
 
     # Check if vLLM is available
-    wait_for_engine_to_start(base_url)
+    wait_for_engine_to_start(base_url, secs=60)
 
     # Get the correct inferernce parameters for the given model 
-    inference_params = get_correct_inference_params(args.save_path)
+    inference_params = get_correct_inference_params(max_inp_len)
 
     # Set up the Open AI Aysnc client. 
     client = openai.AsyncClient(base_url=base_url, api_key="sk_noreq", max_retries=10)
@@ -118,18 +105,14 @@ if __name__ == "__main__":
     # Get the batch results for the given inputs
     if args.model_type == "chat":
         results = batch_chat(copying_inputs, client, task_prompt, system_prompt,
-                             inference_params=inference_params, batch_size=32)
+                             inference_params=inference_params, batch_size=8)
+        results = merge_data_with_responses(copying_data, results, is_chat=True)
     else: 
         results = batch_complete(copying_inputs, client, task_prompt,
-                                 inference_params=inference_params, batch_size=32)
+                                 inference_params=inference_params, batch_size=8)
+        results = merge_data_with_responses(copying_data, results, is_chat=False)
 
-    # Merge results with the inputs 
-    results = merge_data_with_responses(copying_data, results)
     # output format: 500_cot_seed-5_normal.jsonl (normal can be replaced with the type of data i.e. replaced-xyz)
-    save_path = Path(args.save_path) / f"{args.prompt_path.split('/')[-1]}"
-    print(save_path)
-    
-    # TO DO : CHANGE THIS ... 
+    save_path = Path(args.save_path)    
     op_filename = f"{args.ip_path}_{args.config}_seed-{inference_params['seed']}.jsonl"
-    print(op_filename)
     save_to_jsonl(str(save_path), op_filename, results)

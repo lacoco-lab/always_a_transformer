@@ -21,12 +21,13 @@ def get_tokenizer_for_model(model_name: str):
         A tokenizer instance
     """
     # Map model names to their corresponding HuggingFace model identifiers
+    model_name = model_name.lower()
     model_to_hf_mapping = {
-        "llama3.1_8B": "meta-llama/Llama-3.1-8B",
-        "llama3.1_8B-instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct",
-        "llama3.1_70B": "meta-llama/Meta-Llama-3.1-70B",
-        "llama3.3_70B-instruct": "meta-llama/Llama-3.3-70B-Instruct",
-        "OLMo_7B-instruct": "allenai/OLMo-7B-Instruct"
+        "llama3.1_8b": "meta-llama/Llama-3.1-8B",
+        "llama3.1_8b-instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "llama3.1_70b": "meta-llama/Meta-Llama-3.1-70B",
+        "llama3.3_70b-instruct": "meta-llama/Llama-3.3-70B-Instruct",
+        "olmo_7b-instruct": "allenai/OLMo-7B-Instruct"
     }
     
     # Get the huggingface model identifier
@@ -312,7 +313,7 @@ def process_multiple_models(base_dir: str, output_dir: str = None, verbose: bool
             model_results[output_file.name] = avg_stats
         
         all_results[model_name] = model_results
-    
+
     # Write overall comparison if output directory is specified
     if output_dir:
         comparison_file = output_dir / "model_comparison.json"
@@ -334,6 +335,8 @@ def process_multiple_models(base_dir: str, output_dir: str = None, verbose: bool
     return all_results
 
 if __name__ == "__main__":
-    base_dir = 'results/loremipsum'
-    output_dir = 'analysis/loremipsum'
+    # base_dir = 'results/loremipsum'
+    # output_dir = 'analysis/loremipsum'
+    base_dir = 'results/copy_controlled'
+    output_dir = 'analysis/copy_controlled'
     process_multiple_models(base_dir, output_dir, verbose=False)

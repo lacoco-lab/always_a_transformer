@@ -418,7 +418,8 @@ if __name__ == "__main__":
     # Get parameters from argparse
     args = parser.parse_args()
 
-    for tokenizer_name in ["llama3.1_8B", "llama3.1_8B-instruct", "llama3.1_70B", "llama3.3_70B-instruct", "OLMo_7B-instruct"]:
+    # for tokenizer_name in ["llama3.1_8B", "llama3.1_8B-instruct", "llama3.1_70B", "llama3.3_70B-instruct", "OLMo_7B-instruct"]:
+    for tokenizer_name in ["llama3.1_8B"]:
         tokenizer = get_tokenizer_for_model(tokenizer_name)
         output_file = os.path.join("datasets", "copy_controlled", "_".join([tokenizer_name, str(args.deterministic_ratio), str(args.max_tokens)]) + '.jsonl')
 
