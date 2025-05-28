@@ -1,0 +1,6 @@
+>> 4l4h64d		early stop		eval_len0-50_acc: 1.0000		eval_len51-100_acc: 0.9770		lr: 0.001
+>> 4l4h64d		early stop		eval_len0-50_acc: 1.0000		eval_len51-100_acc: 0.9510		lr: 0.0001
+4l4h256d		reach max step		eval_len0-50_acc: 0.4875		eval_len51-100_acc: 0.3170		lr: 0.001
+>> 4l4h256d		early stop		eval_len0-50_acc: 1.0000		eval_len51-100_acc: 0.9980		lr: 0.0001
+>> 4l4h256d		early stop		eval_len0-50_acc: 1.0000		eval_len51-100_acc: 1.0000		eval_len100-150_acc: 0.9980		lr: 0.0001seed:	1
+>> 4l4h256d		early stop		eval_len0-50_acc: 1.0000		eval_len51-100_acc: 0.9995		eval_len100-150_acc: 0.9935		lr: 0.0001seed:	2

@@ -1,0 +1,9 @@
+.idea
+**/__pycache__
+.DS_Store
+**/.ipynb_checkpoints/
+.vscode
+**/.env
+**/submits
+wandb
+venv

@@ -1,0 +1,163 @@
+{
+  "qwen2.5_7B": {
+    "500_tokens_seed_1_echo.jsonl": {
+      "avg_overall_similarity": 0.9986632581330349,
+      "avg_deterministic_similarity": 0.9993761153803055,
+      "avg_non_deterministic_similarity": 0.9849000314615527
+    },
+    "500_tokens_seed_2_echo.jsonl": {
+      "avg_overall_similarity": 0.998805842898676,
+      "avg_deterministic_similarity": 0.9994304313508358,
+      "avg_non_deterministic_similarity": 0.9864290570444968
+    },
+    "500_tokens_seed_0_echo.jsonl": {
+      "avg_overall_similarity": 0.9953869352378083,
+      "avg_deterministic_similarity": 0.9992117349744468,
+      "avg_non_deterministic_similarity": 0.940068181038111
+    }
+  },
+  "qwen2.5_7B_Instruct": {
+    "500_tokens_seed_0_exact.jsonl": {
+      "avg_overall_similarity": 0.9953110405796036,
+      "avg_deterministic_similarity": 0.9975619371677225,
+      "avg_non_deterministic_similarity": 0.9582552267712757
+    },
+    "500_tokens_seed_2_exact.jsonl": {
+      "avg_overall_similarity": 0.9991988157732046,
+      "avg_deterministic_similarity": 0.998843591516614,
+      "avg_non_deterministic_similarity": 0.9917302887842867
+    },
+    "500_tokens_seed_1_verbatim.jsonl": {
+      "avg_overall_similarity": 0.9990958031498985,
+      "avg_deterministic_similarity": 0.9978633461614724,
+      "avg_non_deterministic_similarity": 0.9915936913230183
+    },
+    "500_tokens_seed_1_exact.jsonl": {
+      "avg_overall_similarity": 0.9992076432505077,
+      "avg_deterministic_similarity": 0.9986314369813314,
+      "avg_non_deterministic_similarity": 0.9921586941532503
+    },
+    "500_tokens_seed_2_verbatim.jsonl": {
+      "avg_overall_similarity": 0.9991366281780519,
+      "avg_deterministic_similarity": 0.9980783216778262,
+      "avg_non_deterministic_similarity": 0.9917298632754074
+    }
+  },
+  "llama3_70B": {
+    "500_tokens_seed_1_echo.jsonl": {
+      "avg_overall_similarity": 0.9998113588494097,
+      "avg_deterministic_similarity": 0.9993527343956192,
+      "avg_non_deterministic_similarity": 0.9981951834450018
+    },
+    "500_tokens_seed_2_echo.jsonl": {
+      "avg_overall_similarity": 0.999725547445257,
+      "avg_deterministic_similarity": 0.9993451546495307,
+      "avg_non_deterministic_similarity": 0.9970354323949709
+    },
+    "500_tokens_seed_0_echo.jsonl": {
+      "avg_overall_similarity": 0.9965142042246911,
+      "avg_deterministic_similarity": 0.9993386243386243,
+      "avg_non_deterministic_similarity": 0.9549965250894022
+    }
+  },
+  "llama3_8B": {
+    "500_tokens_seed_1_echo.jsonl": {
+      "avg_overall_similarity": 0.9978146874122725,
+      "avg_deterministic_similarity": 0.9992043197614118,
+      "avg_non_deterministic_similarity": 0.9730215554489146
+    },
+    "500_tokens_seed_2_echo.jsonl": {
+      "avg_overall_similarity": 0.9979625126075066,
+      "avg_deterministic_similarity": 0.999177971955674,
+      "avg_non_deterministic_similarity": 0.9750314261159392
+    },
+    "500_tokens_seed_0_echo.jsonl": {
+      "avg_overall_similarity": 0.9970856296413956,
+      "avg_deterministic_similarity": 0.9992392150480385,
+      "avg_non_deterministic_similarity": 0.9628488624899336
+    }
+  },
+  "llama3_70B_Instruct": {
+    "500_tokens_seed_0_exact.jsonl": {
+      "avg_overall_similarity": 0.9967005484433307,
+      "avg_deterministic_similarity": 0.9979094076655053,
+      "avg_non_deterministic_similarity": 0.9693798978199502
+    },
+    "500_tokens_seed_0_verbatim.jsonl": {
+      "avg_overall_similarity": 0.9965272013534016,
+      "avg_deterministic_similarity": 0.9975964640598788,
+      "avg_non_deterministic_similarity": 0.9699221097080265
+    },
+    "500_tokens_seed_2_exact.jsonl": {
+      "avg_overall_similarity": 0.9998491103202867,
+      "avg_deterministic_similarity": 0.9992850960962921,
+      "avg_non_deterministic_similarity": 0.9988001156812942
+    },
+    "500_tokens_seed_1_verbatim.jsonl": {
+      "avg_overall_similarity": 0.9999070881683297,
+      "avg_deterministic_similarity": 0.999384821690325,
+      "avg_non_deterministic_similarity": 0.9994341709092723
+    },
+    "500_tokens_seed_1_exact.jsonl": {
+      "avg_overall_similarity": 0.9998237032635112,
+      "avg_deterministic_similarity": 0.9990682991624834,
+      "avg_non_deterministic_similarity": 0.9987051958340731
+    },
+    "500_tokens_seed_2_verbatim.jsonl": {
+      "avg_overall_similarity": 0.9999188612099653,
+      "avg_deterministic_similarity": 0.9995160015043366,
+      "avg_non_deterministic_similarity": 0.9994518155341945
+    }
+  },
+  "qwen2.5_32B_Instruct": {
+    "500_tokens_seed_0_exact.jsonl": {
+      "avg_overall_similarity": 0.9949895901096939,
+      "avg_deterministic_similarity": 0.9987468671679197,
+      "avg_non_deterministic_similarity": 0.9516219804074376
+    },
+    "500_tokens_seed_2_exact.jsonl": {
+      "avg_overall_similarity": 0.9965720716144132,
+      "avg_deterministic_similarity": 0.9997799779977997,
+      "avg_non_deterministic_similarity": 0.9607948194801572
+    },
+    "500_tokens_seed_1_exact.jsonl": {
+      "avg_overall_similarity": 0.996735254306052,
+      "avg_deterministic_similarity": 1.0,
+      "avg_non_deterministic_similarity": 0.9626353763586268
+    }
+  },
+  "llama3_8B_Instruct": {
+    "500_tokens_seed_0_exact.jsonl": {
+      "avg_overall_similarity": 0.9956285420483765,
+      "avg_deterministic_similarity": 0.9996164394070154,
+      "avg_non_deterministic_similarity": 0.9625738535207345
+    },
+    "500_tokens_seed_2_exact.jsonl": {
+      "avg_overall_similarity": 0.9984685311919499,
+      "avg_deterministic_similarity": 0.9953502055608495,
+      "avg_non_deterministic_similarity": 0.9851005077118009
+    },
+    "500_tokens_seed_1_exact.jsonl": {
+      "avg_overall_similarity": 0.9984283535607131,
+      "avg_deterministic_similarity": 0.9951564061869091,
+      "avg_non_deterministic_similarity": 0.9847532341863187
+    }
+  },
+  "qwen2.5_32B": {
+    "500_tokens_seed_1_echo.jsonl": {
+      "avg_overall_similarity": 0.9992493595873821,
+      "avg_deterministic_similarity": 0.9998738211592463,
+      "avg_non_deterministic_similarity": 0.9913673411820372
+    },
+    "500_tokens_seed_2_echo.jsonl": {
+      "avg_overall_similarity": 0.9992511668511032,
+      "avg_deterministic_similarity": 0.9997856490538695,
+      "avg_non_deterministic_similarity": 0.9915368718710201
+    },
+    "500_tokens_seed_0_echo.jsonl": {
+      "avg_overall_similarity": 0.9968136602743745,
+      "avg_deterministic_similarity": 0.9997409263366711,
+      "avg_non_deterministic_similarity": 0.9589396990252123
+    }
+  }
+}
