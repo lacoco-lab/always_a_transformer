@@ -34,4 +34,13 @@ prompts/            # prompt templates
 
 ## Citation
 
-To be added after ArXiv is uploded
+```
+@inproceedings{
+    jobanputra2026born,
+    title={Born a Transformer -- Always a Transformer? On the Effect of Pretraining on Architectural Abilities},
+    author={Mayank Jobanputra and Yana Veitsman and Yash Sarrof and Aleksandra Bakalova and Vera Demberg and Ellie Pavlick and Michael Hahn},
+    booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems},
+    year={2026},
+    url={https://openreview.net/forum?id=Huw15LqglI}
+}
+```
