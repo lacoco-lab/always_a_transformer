@@ -1,7 +1,7 @@
-# Born A Transformer, Always a Transformer — artifact
+# [NeurIPS 2025] Born a Transformer -- Always a Transformer? On the Effect of Pretraining on Architectural Abilities 
 
 This repository contains **all code, configs and data used in our paper
-“Born A Transformer -- Always a Transformer?”**
+“Born a Transformer -- Always a Transformer? On the Effect of Pretraining on Architectural Abilities”**
 
 | section of paper | experiment category                                                   | folder                                                                |
 | ---------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------- |
